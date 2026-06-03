@@ -24,9 +24,7 @@ const isLast = computed(() => store.currentIndex === store.questions.length - 1)
 const isCorrect = computed(() => answer.value === question.value?.correct)
 /** Fraction of the run completed, for the progress bar (0–100). */
 const progress = computed(() =>
-  store.questions.length
-    ? ((store.currentIndex + 1) / store.questions.length) * 100
-    : 0,
+  store.questions.length ? ((store.currentIndex + 1) / store.questions.length) * 100 : 0,
 )
 
 /**
@@ -130,9 +128,7 @@ function choose(displayIndex: number): void {
         </span>
         <span class="label">{{ option }}</span>
         <span v-if="optionState(i) === 'correct'" class="tag">Correct</span>
-        <span v-else-if="optionState(i) === 'incorrect'" class="tag">
-          Your answer
-        </span>
+        <span v-else-if="optionState(i) === 'incorrect'" class="tag"> Your answer </span>
       </button>
     </div>
 
@@ -160,14 +156,7 @@ function choose(displayIndex: number): void {
             stroke-linejoin="round"
           />
         </svg>
-        <svg
-          v-else
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          aria-hidden="true"
-        >
+        <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.6" />
           <path
             d="M5.2 5.2l5.6 5.6M10.8 5.2l-5.6 5.6"

@@ -123,7 +123,9 @@ def test_http_count_caps_result(tmp_path: Path, monkeypatch) -> None:
     topic_dir.mkdir(parents=True)
     for i in range(3):
         (topic_dir / f"q{i}.json").write_text(json.dumps(sample))
-    monkeypatch.setattr(main, "load_quiz", lambda topic: load_quiz(topic, base=tmp_path))
+    monkeypatch.setattr(
+        main, "load_quiz", lambda topic: load_quiz(topic, base=tmp_path)
+    )
 
     client = TestClient(app)
 

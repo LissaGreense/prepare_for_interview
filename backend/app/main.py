@@ -39,5 +39,5 @@ def quiz(topic: str, count: int | None = None) -> list[Question]:
     try:
         questions = load_quiz(topic)
     except TopicNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Unknown topic: {topic}")
+        raise HTTPException(status_code=404, detail=f"Unknown topic: {topic}") from None
     return select_questions(questions, count)

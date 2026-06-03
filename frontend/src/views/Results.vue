@@ -43,9 +43,7 @@ const missed = computed<MissedQuestion[]>(() =>
         <span class="got">{{ store.score }}</span>
         <span class="of">/ {{ store.questions.length }}</span>
       </div>
-      <p v-if="missed.length" class="score-sub">
-        {{ missed.length }} to review below.
-      </p>
+      <p v-if="missed.length" class="score-sub">{{ missed.length }} to review below.</p>
       <p v-else class="score-sub">Perfect score — nothing to review.</p>
     </div>
 
@@ -67,8 +65,6 @@ const missed = computed<MissedQuestion[]>(() =>
       </div>
     </template>
 
-    <button class="btn btn-ghost btn-block" @click="store.reset()">
-      Pick another topic
-    </button>
+    <button class="btn btn-ghost btn-block" @click="store.reset()">Pick another topic</button>
   </section>
 </template>

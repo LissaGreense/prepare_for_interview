@@ -54,8 +54,20 @@ def test_list_topics_counts_only_valid(tmp_path: Path) -> None:
 
     # No manifests present: title falls back to the folder name, icon/description None.
     assert [t.model_dump() for t in topics] == [
-        {"topic": "empty", "title": "empty", "icon": None, "description": None, "count": 0},
-        {"topic": "python", "title": "python", "icon": None, "description": None, "count": 2},
+        {
+            "topic": "empty",
+            "title": "empty",
+            "icon": None,
+            "description": None,
+            "count": 0,
+        },
+        {
+            "topic": "python",
+            "title": "python",
+            "icon": None,
+            "description": None,
+            "count": 2,
+        },
         {"topic": "sql", "title": "sql", "icon": None, "description": None, "count": 1},
     ]
 

@@ -73,11 +73,7 @@ async function start(): Promise<void> {
         </button>
       </div>
 
-      <button
-        class="btn btn-primary btn-block"
-        :disabled="!selectedTopic"
-        @click="start"
-      >
+      <button class="btn btn-primary btn-block" :disabled="!selectedTopic" @click="start">
         Start quiz
       </button>
     </template>
