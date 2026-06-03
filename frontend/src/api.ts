@@ -1,0 +1,19 @@
+import type { Question } from './types'
+
+/** Backend base URL (FastAPI dev server). */
+const API_BASE = 'http://localhost:8000'
+
+/**
+ * Fetch all questions for a topic from the backend.
+ *
+ * @param topic - Topic name (e.g. "python").
+ * @returns The topic's questions.
+ * @throws If the request fails or the backend returns a non-2xx status.
+ */
+export async function fetchQuiz(topic: string): Promise<Question[]> {
+  const res = await fetch(`${API_BASE}/quiz?topic=${encodeURIComponent(topic)}`)
+  if (!res.ok) {
+    throw new Error(`Failed to load quiz for "${topic}": ${res.status}`)
+  }
+  return (await res.json()) as Question[]
+}

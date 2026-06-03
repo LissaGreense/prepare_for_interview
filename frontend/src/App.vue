@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import Quiz from './views/Quiz.vue'
 </script>
 
 <template>
-  <HelloWorld />
+  <Quiz />
 </template>
