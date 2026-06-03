@@ -62,8 +62,26 @@ function choose(displayIndex: number): void {
         Question <b>{{ store.currentIndex + 1 }}</b> of
         <b>{{ store.questions.length }}</b>
       </span>
-      <div class="progress-track" aria-hidden="true">
-        <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+      <div class="quiz-top__right">
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+        </div>
+        <button
+          class="quiz-quit"
+          type="button"
+          aria-label="Quit quiz and return to topics"
+          @click="store.reset()"
+        >
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="M4 4l8 8M12 4l-8 8"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+          Quit
+        </button>
       </div>
     </div>
 
