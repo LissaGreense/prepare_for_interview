@@ -1,0 +1,11 @@
+{
+  "question": "What is a key trade-off of adding an index to a table column?",
+  "options": [
+    "It speeds up reads on that column but slows down writes and uses extra storage",
+    "It speeds up both reads and writes with no downside",
+    "It guarantees the column values are unique",
+    "It permanently sorts the underlying table on disk"
+  ],
+  "correct": 0,
+  "explanation": "An index accelerates lookups/filters on the column, but every INSERT/UPDATE/DELETE must also maintain the index, adding write cost and storage. Uniqueness needs a separate UNIQUE constraint."
+}

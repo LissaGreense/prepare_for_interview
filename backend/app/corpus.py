@@ -13,7 +13,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from .models import Question, Topic
+from .models import Question, Topic, TopicManifest
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,10 @@ logger = logging.getLogger(__name__)
 # file (app -> backend -> repo root) so it does not depend on the process CWD.
 # A later task can point the loader at a fixture directory by passing `base`.
 QUESTIONS_DIR = Path(__file__).resolve().parents[2] / "questions"
+
+# Reserved filename inside a topic folder holding the topic's display metadata
+# (title, icon, description). It is NOT a question and is skipped when loading.
+MANIFEST_NAME = "topic.json"
 
 
 class TopicNotFoundError(Exception):
@@ -43,13 +47,34 @@ def _read_question(file: Path, topic: str) -> Question | None:
 
 
 def _read_topic(topic_dir: Path, topic: str) -> list[Question]:
-    """Load every valid question in a topic folder, skipping malformed files."""
+    """Load every valid question in a topic folder, skipping malformed files.
+
+    The reserved manifest file (`topic.json`) is not a question and is ignored.
+    """
     questions: list[Question] = []
     for file in sorted(topic_dir.glob("*.json")):
+        if file.name == MANIFEST_NAME:
+            continue
         question = _read_question(file, topic)
         if question is not None:
             questions.append(question)
     return questions
+
+
+def _read_manifest(topic_dir: Path) -> TopicManifest:
+    """Read a topic folder's `topic.json` display metadata.
+
+    Returns an empty manifest when the file is absent or malformed (a bad
+    manifest is logged and ignored so it never breaks the topic listing).
+    """
+    manifest_file = topic_dir / MANIFEST_NAME
+    if not manifest_file.is_file():
+        return TopicManifest()
+    try:
+        return TopicManifest.model_validate_json(manifest_file.read_text())
+    except (ValidationError, ValueError) as exc:
+        logger.warning("Ignoring malformed manifest %s: %s", manifest_file, exc)
+        return TopicManifest()
 
 
 def load_quiz(topic: str, base: Path = QUESTIONS_DIR) -> list[Question]:
@@ -98,13 +123,24 @@ def list_topics(base: Path = QUESTIONS_DIR) -> list[Topic]:
         base: Corpus root directory. Defaults to the repo's questions/ dir.
 
     Returns:
-        One Topic per subfolder, sorted by name, where count is the number of
+        One Topic per subfolder, sorted by name, carrying the folder's manifest
+        display metadata (title falls back to the folder name) and its count of
         valid questions (malformed files are not counted).
     """
     if not base.is_dir():
         return []
     topics: list[Topic] = []
     for topic_dir in sorted(p for p in base.iterdir() if p.is_dir()):
-        count = len(_read_topic(topic_dir, topic_dir.name))
-        topics.append(Topic(topic=topic_dir.name, count=count))
+        name = topic_dir.name
+        manifest = _read_manifest(topic_dir)
+        count = len(_read_topic(topic_dir, name))
+        topics.append(
+            Topic(
+                topic=name,
+                title=manifest.title or name,
+                icon=manifest.icon,
+                description=manifest.description,
+                count=count,
+            )
+        )
     return topics

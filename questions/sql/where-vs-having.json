@@ -1,0 +1,11 @@
+{
+  "question": "What is the difference between WHERE and HAVING?",
+  "options": [
+    "WHERE filters rows before aggregation; HAVING filters groups after aggregation",
+    "They are interchangeable and always produce the same result",
+    "HAVING filters individual rows; WHERE filters aggregated groups",
+    "WHERE only works with JOINs; HAVING only works with subqueries"
+  ],
+  "correct": 0,
+  "explanation": "WHERE filters rows before GROUP BY runs, so it can't reference aggregates. HAVING filters the grouped results afterward and can use aggregate functions like COUNT() or SUM()."
+}

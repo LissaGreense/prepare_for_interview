@@ -28,8 +28,28 @@ class Question(BaseModel):
         return self
 
 
+class TopicManifest(BaseModel):
+    """Display metadata for a topic, read from a `topic.json` manifest.
+
+    All fields are optional; a topic works without a manifest. Stored in the
+    topic folder, separate from the question files.
+    """
+
+    title: str | None = None
+    icon: str | None = None
+    description: str | None = None
+
+
 class Topic(BaseModel):
-    """A topic and how many valid questions it currently has on disk."""
+    """A topic's display metadata plus how many valid questions it has on disk.
+
+    `topic` is the folder name (the id used by `/quiz`). `title`, `icon`, and
+    `description` come from the folder's optional `topic.json` manifest; `title`
+    falls back to the folder name when no manifest provides one.
+    """
 
     topic: str
+    title: str
+    icon: str | None = None
+    description: str | None = None
     count: int

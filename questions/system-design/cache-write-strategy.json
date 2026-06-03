@@ -1,0 +1,11 @@
+{
+  "question": "In a write-through cache, what happens on a write?",
+  "options": [
+    "Data is written to the cache and the backing store synchronously",
+    "Data is written only to the cache and flushed to the store later",
+    "Data is written only to the store, bypassing the cache",
+    "The cache entry is invalidated and rewritten on the next read"
+  ],
+  "correct": 0,
+  "explanation": "Write-through updates the cache and the backing store at the same time, keeping them consistent at the cost of write latency. Write-back defers the store update; write-around skips the cache on writes."
+}

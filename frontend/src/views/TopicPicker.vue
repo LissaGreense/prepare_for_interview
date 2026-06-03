@@ -8,8 +8,6 @@ const store = useQuizStore()
 
 const topics = ref<Topic[]>([])
 const error = ref<string | null>(null)
-/** Optional question count; null = all questions in the topic. */
-const count = ref<number | null>(null)
 /** The topic the player has selected but not yet started, or null. */
 const selectedTopic = ref<string | null>(null)
 
@@ -26,11 +24,11 @@ function select(topic: string): void {
   selectedTopic.value = topic
 }
 
-/** Start a quiz for the selected topic, applying the optional count. */
+/** Start a quiz for the selected topic. */
 async function start(): Promise<void> {
   if (!selectedTopic.value) return
   try {
-    await store.startQuiz(selectedTopic.value, count.value ?? undefined)
+    await store.startQuiz(selectedTopic.value)
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Failed to start quiz'
   }
@@ -45,43 +43,33 @@ async function start(): Promise<void> {
 
     <p v-if="error" class="error" role="alert">{{ error }}</p>
     <template v-else>
-      <div class="field">
-        <label for="qcount">
-          Number of questions <span class="hint">(blank = all)</span>
-        </label>
-        <input
-          id="qcount"
-          v-model.number="count"
-          type="number"
-          min="1"
-          placeholder="all"
-          inputmode="numeric"
-        />
-      </div>
-
-      <div class="topic-list" role="listbox" aria-label="Topics">
+      <div class="topic-grid" role="listbox" aria-label="Topics">
         <button
           v-for="t in topics"
           :key="t.topic"
-          class="topic"
+          class="topic-card"
           :class="{ selected: selectedTopic === t.topic }"
           role="option"
           :aria-selected="selectedTopic === t.topic"
           @click="select(t.topic)"
         >
-          <span class="check" aria-hidden="true">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M3 8.5l3.2 3.2L13 4.5"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+          <span class="topic-card__top">
+            <span class="topic-card__icon" aria-hidden="true">{{ t.icon ?? '📘' }}</span>
+            <span class="topic-card__check" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M3 8.5l3.2 3.2L13 4.5"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
           </span>
-          <span class="topic-name">{{ t.topic }}</span>
-          <span class="topic-count">{{ t.count }}</span>
+          <span class="topic-card__title">{{ t.title }}</span>
+          <span v-if="t.description" class="topic-card__desc">{{ t.description }}</span>
+          <span class="topic-card__count">{{ t.count }} questions</span>
         </button>
       </div>
 

@@ -21,16 +21,11 @@ export async function fetchTopics(): Promise<Topic[]> {
  * Fetch questions for a topic from the backend.
  *
  * @param topic - Topic name (e.g. "python").
- * @param count - Optional max number of questions; omitted = all.
- * @returns The topic's questions.
+ * @returns The topic's questions, randomized server-side.
  * @throws If the request fails or the backend returns a non-2xx status.
  */
-export async function fetchQuiz(topic: string, count?: number): Promise<Question[]> {
-  const params = new URLSearchParams({ topic })
-  if (count !== undefined) {
-    params.set('count', String(count))
-  }
-  const res = await fetch(`${API_BASE}/quiz?${params}`)
+export async function fetchQuiz(topic: string): Promise<Question[]> {
+  const res = await fetch(`${API_BASE}/quiz?topic=${encodeURIComponent(topic)}`)
   if (!res.ok) {
     throw new Error(`Failed to load quiz for "${topic}": ${res.status}`)
   }

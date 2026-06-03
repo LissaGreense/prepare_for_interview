@@ -34,11 +34,10 @@ export const useQuizStore = defineStore('quiz', () => {
    * progress for the new run.
    *
    * @param topic - Topic to drill.
-   * @param count - Optional number of questions; omitted = all.
    * @throws If the quiz fetch fails (caller handles the error state).
    */
-  async function startQuiz(topic: string, count?: number): Promise<void> {
-    questions.value = await fetchQuiz(topic, count)
+  async function startQuiz(topic: string): Promise<void> {
+    questions.value = await fetchQuiz(topic)
     currentIndex.value = 0
     answers.value = questions.value.map(() => null)
     view.value = 'quiz'

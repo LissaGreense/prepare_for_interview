@@ -52,15 +52,52 @@ def test_list_topics_counts_only_valid(tmp_path: Path) -> None:
 
     topics = list_topics(base=tmp_path)
 
+    # No manifests present: title falls back to the folder name, icon/description None.
     assert [t.model_dump() for t in topics] == [
-        {"topic": "empty", "count": 0},
-        {"topic": "python", "count": 2},
-        {"topic": "sql", "count": 1},
+        {"topic": "empty", "title": "empty", "icon": None, "description": None, "count": 0},
+        {"topic": "python", "title": "python", "icon": None, "description": None, "count": 2},
+        {"topic": "sql", "title": "sql", "icon": None, "description": None, "count": 1},
     ]
 
 
 def test_list_topics_missing_base_is_empty(tmp_path: Path) -> None:
     assert list_topics(base=tmp_path / "does-not-exist") == []
+
+
+def test_topic_manifest_is_read_and_not_counted(tmp_path: Path) -> None:
+    _write(tmp_path / "python" / "a.json", VALID)
+    _write(tmp_path / "python" / "b.json", VALID)
+    _write(
+        tmp_path / "python" / "topic.json",
+        {"title": "Python", "icon": "🐍", "description": "Core language."},
+    )
+
+    (topic,) = list_topics(base=tmp_path)
+
+    assert topic.title == "Python"
+    assert topic.icon == "🐍"
+    assert topic.description == "Core language."
+    assert topic.count == 2  # the manifest itself is not counted as a question
+
+
+def test_load_quiz_ignores_manifest(tmp_path: Path) -> None:
+    _write(tmp_path / "python" / "a.json", VALID)
+    _write(tmp_path / "python" / "topic.json", {"title": "Python"})
+
+    questions = load_quiz("python", base=tmp_path)
+
+    assert [q.id for q in questions] == ["a"]
+
+
+def test_malformed_manifest_falls_back_to_folder_name(tmp_path: Path) -> None:
+    _write(tmp_path / "python" / "a.json", VALID)
+    _write(tmp_path / "python" / "topic.json", "{not valid json")
+
+    (topic,) = list_topics(base=tmp_path)
+
+    assert topic.title == "python"
+    assert topic.icon is None
+    assert topic.count == 1
 
 
 def test_endpoints_against_real_corpus() -> None:
