@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Interview Prep — Clean Light</title>
+<style>
+  :root {
+    /* Palette — neutral slate ground + single indigo accent */
+    --bg:           #fbfbfc;
+    --surface:      #ffffff;
+    --surface-2:    #f6f7f9;
+    --border:       #e7e8ec;
+    --border-strong:#d6d8df;
+
+    --text:         #1a1b1f;
+    --text-2:       #565a64;
+    --text-3:       #8a8f9a;
+
+    --accent:       #4f46e5;
+    --accent-hover: #4338ca;
+    --accent-soft:  #eef0fe;
+    --accent-ring:  rgba(79,70,229,.35);
+
+    --good:         #15803d;
+    --good-soft:    #ecfdf2;
+    --good-border:  #bbe7c7;
+
+    --bad:          #b42318;
+    --bad-soft:     #fef3f2;
+    --bad-border:   #f3c9c4;
+
+    /* Spacing rhythm — 4px base */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 24px;
+    --s-6: 32px;
+    --s-7: 48px;
+    --s-8: 64px;
+
+    /* Radius */
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
+
+    /* Type scale */
+    --t-xs:  12px;
+    --t-sm:  13px;
+    --t-base:15px;
+    --t-md:  17px;
+    --t-lg:  21px;
+    --t-xl:  28px;
+    --t-2xl: 40px;
+
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+            "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: var(--t-base);
+    line-height: 1.5;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--s-8) var(--s-5) var(--s-8);
+  }
+
+  /* Section label between screens */
+  .screen-label {
+    font-size: var(--t-xs);
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: 0 0 var(--s-4);
+  }
+
+  .divider {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: var(--s-8) 0;
+  }
+
+  /* Card — the surface every screen lives on */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: var(--s-6);
+  }
+
+  /* ---------- Typography ---------- */
+  .eyebrow {
+    font-size: var(--t-sm);
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: .02em;
+    margin: 0 0 var(--s-2);
+  }
+  h1 {
+    font-size: var(--t-xl);
+    line-height: 1.15;
+    font-weight: 680;
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--s-2);
+  }
+  .subtitle {
+    color: var(--text-2);
+    margin: 0 0 var(--s-6);
+    font-size: var(--t-md);
+  }
+  h2.q {
+    font-size: var(--t-lg);
+    line-height: 1.3;
+    font-weight: 640;
+    letter-spacing: -0.01em;
+    margin: var(--s-3) 0 var(--s-5);
+  }
+
+  /* ---------- Form: number of questions ---------- */
+  .field {
+    margin-bottom: var(--s-6);
+  }
+  .field label {
+    display: block;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: var(--s-2);
+  }
+  .field .hint {
+    font-weight: 400;
+    color: var(--text-3);
+  }
+  input[type="number"] {
+    width: 120px;
+    font-family: var(--font);
+    font-size: var(--t-base);
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-sm);
+    padding: var(--s-2) var(--s-3);
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  input[type="number"]::placeholder { color: var(--text-3); }
+  input[type="number"]:hover { border-color: #c2c5ce; }
+  input[type="number"]:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+  }
+
+  /* ---------- Topic list ---------- */
+  .topics { display: flex; flex-direction: column; gap: var(--s-3); }
+
+  .topic {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    width: 100%;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: var(--s-4) var(--s-4);
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: var(--t-base);
+    color: var(--text);
+    transition: border-color .15s ease, background .15s ease, transform .05s ease;
+  }
+  .topic:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-2);
+  }
+  .topic:active { transform: translateY(1px); }
+  .topic:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+  }
+  .topic .left { display: flex; align-items: center; gap: var(--s-3); }
+  .topic .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border-strong);
+    flex: none;
+  }
+  .topic .name { font-weight: 560; font-family: var(--mono); font-size: var(--t-sm); }
+  .topic .count {
+    font-size: var(--t-sm);
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .topic .chev { color: var(--text-3); display: flex; }
+
+  /* Selected topic */
+  .topic.selected {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .topic.selected .dot { background: var(--accent); }
+  .topic.selected .chev { color: var(--accent); }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    -webkit-appearance: none;
+    appearance: none;
+    font-family: var(--font);
+    font-size: var(--t-base);
+    font-weight: 600;
+    line-height: 1;
+    border-radius: var(--r-sm);
+    padding: 11px var(--s-5);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+  }
+  .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-ring);
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:active { background: var(--accent-hover); transform: translateY(1px); }
+  .btn-primary:disabled {
+    background: var(--surface-2);
+    color: var(--text-3);
+    border-color: var(--border);
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .btn-secondary:hover { background: var(--surface-2); border-color: #c2c5ce; }
+  .btn-secondary:active { transform: translateY(1px); }
+
+  .actions { margin-top: var(--s-6); display: flex; justify-content: flex-end; }
+  .actions.start { justify-content: space-between; align-items: center; }
+
+  /* ---------- Quiz ---------- */
+  .quiz-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--s-4);
+    margin-bottom: var(--s-4);
+  }
+  .progress-text {
+    font-size: var(--t-sm);
+    font-weight: 600;
+    color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .progress-track {
+    flex: 1;
+    height: 6px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+    max-width: 220px;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 40%;
+    background: var(--accent);
+    border-radius: 999px;
+  }
+
+  .options { display: flex; flex-direction: column; gap: var(--s-3); }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    width: 100%;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: var(--s-4);
+    font-family: var(--font);
+    font-size: var(--t-base);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .option:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+  }
+  .option .marker {
+    flex: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  .option .label { flex: 1; }
+  .option .tag {
+    font-size: var(--t-xs);
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  /* Answered states */
+  .option:disabled { cursor: default; }
+
+  .option.correct {
+    border-color: var(--good-border);
+    background: var(--good-soft);
+    color: #14532d;
+  }
+  .option.correct .marker {
+    border-color: var(--good);
+    background: var(--good);
+    color: #fff;
+  }
+  .option.correct .tag { color: var(--good); }
+
+  .option.incorrect {
+    border-color: var(--bad-border);
+    background: var(--bad-soft);
+    color: #7a271a;
+  }
+  .option.incorrect .marker {
+    border-color: var(--bad);
+    background: var(--bad);
+    color: #fff;
+  }
+  .option.incorrect .tag { color: var(--bad); }
+
+  .option.muted {
+    color: var(--text-3);
+    background: var(--surface);
+  }
+  .option.muted .label { color: var(--text-3); }
+
+  /* Reveal / explanation */
+  .reveal {
+    margin-top: var(--s-5);
+    border: 1px solid var(--bad-border);
+    background: var(--bad-soft);
+    border-radius: var(--r-md);
+    padding: var(--s-4) var(--s-5);
+  }
+  .reveal .verdict {
+    display: flex; align-items: center; gap: var(--s-2);
+    font-weight: 700;
+    color: var(--bad);
+    font-size: var(--t-sm);
+    letter-spacing: .02em;
+    margin-bottom: var(--s-2);
+  }
+  .reveal p {
+    margin: 0;
+    color: #7a271a;
+    font-size: var(--t-base);
+    line-height: 1.55;
+  }
+
+  /* ---------- Results ---------- */
+  .score-block {
+    text-align: center;
+    padding: var(--s-6) 0 var(--s-7);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--s-6);
+  }
+  .score-block .congrats {
+    font-size: var(--t-sm);
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin: 0 0 var(--s-3);
+  }
+  .score {
+    font-size: var(--t-2xl);
+    font-weight: 720;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .score .of { color: var(--text-3); font-weight: 600; }
+  .score-block .sub {
+    margin: var(--s-3) 0 0;
+    color: var(--text-2);
+    font-size: var(--t-base);
+  }
+  .score-ring {
+    width: 86px; height: 86px;
+    margin: 0 auto var(--s-4);
+    display: block;
+  }
+
+  .review-title {
+    font-size: var(--t-sm);
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: 0 0 var(--s-4);
+  }
+  .review-list { display: flex; flex-direction: column; gap: var(--s-4); }
+  .review-item {
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: var(--s-5);
+  }
+  .review-item .rq {
+    font-weight: 620;
+    font-size: var(--t-md);
+    margin: 0 0 var(--s-3);
+    letter-spacing: -0.01em;
+  }
+  .ans-row {
+    display: flex; gap: var(--s-2);
+    font-size: var(--t-sm);
+    margin-bottom: var(--s-1);
+    align-items: baseline;
+  }
+  .ans-row .k {
+    flex: none;
+    width: 108px;
+    color: var(--text-3);
+    font-weight: 600;
+  }
+  .ans-row .v.wrong { color: var(--bad); font-weight: 560; }
+  .ans-row .v.right { color: var(--good); font-weight: 560; }
+  .review-item .expl {
+    margin: var(--s-3) 0 0;
+    padding-top: var(--s-3);
+    border-top: 1px dashed var(--border);
+    color: var(--text-2);
+    font-size: var(--t-sm);
+    line-height: 1.55;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ SCREEN 1 — TOPIC PICKER ============ -->
+  <p class="screen-label">1 — Topic Picker</p>
+  <section class="card" aria-label="Topic picker">
+    <p class="eyebrow">Interview Prep</p>
+    <h1>Pick a topic</h1>
+    <p class="subtitle">Choose a subject to start a focused practice round.</p>
+
+    <div class="field">
+      <label for="numq">Number of questions <span class="hint">(blank = all)</span></label>
+      <input id="numq" type="number" min="1" placeholder="All" />
+    </div>
+
+    <div class="topics" role="list">
+      <button class="topic selected" role="listitem" aria-pressed="true">
+        <span class="left">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="name">python</span>
+        </span>
+        <span class="left">
+          <span class="count">12 questions</span>
+          <span class="chev" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </span>
+        </span>
+      </button>
+
+      <button class="topic" role="listitem" aria-pressed="false">
+        <span class="left">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="name">sql</span>
+        </span>
+        <span class="left">
+          <span class="count">8 questions</span>
+          <span class="chev" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </span>
+        </span>
+      </button>
+
+      <button class="topic" role="listitem" aria-pressed="false">
+        <span class="left">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="name">system-design</span>
+        </span>
+        <span class="left">
+          <span class="count">5 questions</span>
+          <span class="chev" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </span>
+        </span>
+      </button>
+
+      <button class="topic" role="listitem" aria-pressed="false">
+        <span class="left">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="name">javascript</span>
+        </span>
+        <span class="left">
+          <span class="count">15 questions</span>
+          <span class="chev" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </span>
+        </span>
+      </button>
+    </div>
+
+    <div class="actions start">
+      <span class="count" style="color:var(--text-3);font-size:var(--t-sm)">python · 12 questions selected</span>
+      <button class="btn btn-primary">Start practice</button>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============ SCREEN 2 — QUIZ (ANSWERED) ============ -->
+  <p class="screen-label">2 — Quiz (answered)</p>
+  <section class="card" aria-label="Quiz question">
+    <div class="quiz-head">
+      <span class="progress-text">Question 2 of 5</span>
+      <span class="progress-track" aria-hidden="true"><span class="progress-fill"></span></span>
+    </div>
+
+    <p class="eyebrow" style="font-family:var(--mono);font-size:var(--t-xs)">python</p>
+    <h2 class="q">What does CPython's GIL protect?</h2>
+
+    <div class="options">
+      <button class="option correct" disabled>
+        <span class="marker" aria-hidden="true">✓</span>
+        <span class="label">Access to Python objects' reference counts</span>
+        <span class="tag">Correct</span>
+      </button>
+
+      <button class="option incorrect" disabled>
+        <span class="marker" aria-hidden="true">✕</span>
+        <span class="label">GPU memory allocation</span>
+        <span class="tag">Your answer</span>
+      </button>
+
+      <button class="option muted" disabled>
+        <span class="marker" aria-hidden="true"></span>
+        <span class="label">Disk I/O scheduling between processes</span>
+      </button>
+
+      <button class="option muted" disabled>
+        <span class="marker" aria-hidden="true"></span>
+        <span class="label">Network socket buffers</span>
+      </button>
+    </div>
+
+    <div class="reveal" role="status">
+      <div class="verdict">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+        Incorrect
+      </div>
+      <p>The GIL serializes access to interpreter state, notably refcounts, so only one thread executes Python bytecode at a time.</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary">Next →</button>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============ SCREEN 3 — RESULTS ============ -->
+  <p class="screen-label">3 — Results</p>
+  <section class="card" aria-label="Results">
+    <div class="score-block">
+      <svg class="score-ring" viewBox="0 0 36 36" aria-hidden="true">
+        <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--surface-2)" stroke-width="3"></circle>
+        <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--accent)" stroke-width="3"
+                stroke-linecap="round" stroke-dasharray="60 100" transform="rotate(-90 18 18)"></circle>
+      </svg>
+      <p class="congrats">Round complete</p>
+      <p class="score">3 <span class="of">/ 5</span></p>
+      <p class="sub">Nice work — you got 60% on <strong>python</strong>. Review the two you missed below.</p>
+    </div>
+
+    <p class="review-title">Review · 2 missed</p>
+    <div class="review-list">
+      <div class="review-item">
+        <p class="rq">What does CPython's GIL protect?</p>
+        <div class="ans-row"><span class="k">Your answer</span><span class="v wrong">GPU memory allocation</span></div>
+        <div class="ans-row"><span class="k">Correct answer</span><span class="v right">Access to Python objects' reference counts</span></div>
+        <p class="expl">The GIL serializes access to interpreter state, notably refcounts, so only one thread executes Python bytecode at a time.</p>
+      </div>
+
+      <div class="review-item">
+        <p class="rq">What is the time complexity of looking up a key in a Python <span style="font-family:var(--mono);font-size:.92em">dict</span>?</p>
+        <div class="ans-row"><span class="k">Your answer</span><span class="v wrong">O(n)</span></div>
+        <div class="ans-row"><span class="k">Correct answer</span><span class="v right">O(1) average</span></div>
+        <p class="expl">Dicts are hash tables, so average-case lookups are constant time; worst case degrades to O(n) under heavy hash collisions.</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary">Pick another topic</button>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Interview Prep — Focused Dark</title>
+<style>
+  :root {
+    /* ---- Color tokens ---- */
+    /* Deep neutral base + layered surface elevations */
+    --bg:            #0c0e12;   /* page background, deepest */
+    --surface-1:     #14171d;   /* card base */
+    --surface-2:     #1b1f27;   /* raised: inputs, option rows */
+    --surface-3:     #232831;   /* hover / interactive raise */
+    --line:          #2a2f3a;   /* hairline borders */
+    --line-strong:   #353c49;
+
+    /* Text */
+    --text:          #eef1f6;   /* primary, high contrast */
+    --text-muted:    #a3acbd;   /* secondary */
+    --text-faint:    #6b7484;   /* labels, counts */
+
+    /* ONE vivid accent — used sparingly */
+    --accent:        #5eead4;   /* teal/aqua */
+    --accent-strong: #2dd4bf;
+    --accent-ink:    #04221d;   /* text on accent fill */
+    --accent-soft:   rgba(94, 234, 212, 0.10);
+    --accent-line:   rgba(94, 234, 212, 0.38);
+
+    /* Semantic states */
+    --good:          #56d6a0;
+    --good-soft:     rgba(86, 214, 160, 0.10);
+    --good-line:     rgba(86, 214, 160, 0.45);
+    --bad:           #f4748b;
+    --bad-soft:      rgba(244, 116, 139, 0.10);
+    --bad-line:      rgba(244, 116, 139, 0.42);
+
+    /* ---- Spacing scale ---- */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 24px;
+    --s-6: 32px;
+    --s-7: 48px;
+
+    /* ---- Radius ---- */
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 22px;
+
+    /* ---- Type scale ---- */
+    --t-xs:  12px;
+    --t-sm:  13px;
+    --t-base:15px;
+    --t-md:  17px;
+    --t-lg:  22px;
+    --t-xl:  30px;
+    --t-2xl: 52px;
+
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -12px rgba(0,0,0,.55);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--t-base);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Subtle ambient glow at top, very restrained */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(900px 480px at 50% -160px, rgba(94,234,212,.06), transparent 70%);
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: var(--s-7) var(--s-5) 96px;
+  }
+
+  /* Section scaffolding for the comp */
+  .screen-label {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 0 0 var(--s-4) 2px;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--line) 18%, var(--line) 82%, transparent);
+    margin: var(--s-7) 0;
+  }
+
+  /* ---- Card ---- */
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    padding: var(--s-6);
+    box-shadow: var(--shadow);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 var(--s-2);
+  }
+
+  h1 {
+    font-size: var(--t-xl);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--s-2);
+    font-weight: 650;
+  }
+
+  .subhead {
+    color: var(--text-muted);
+    margin: 0 0 var(--s-6);
+    font-size: var(--t-md);
+  }
+
+  /* ---- Form field ---- */
+  .field { margin-bottom: var(--s-6); }
+  .field label {
+    display: block;
+    font-size: var(--t-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--s-2);
+    font-weight: 550;
+  }
+  .field .hint { color: var(--text-faint); font-weight: 400; }
+
+  input[type="number"] {
+    width: 140px;
+    background: var(--surface-2);
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    padding: 10px 14px;
+    border-radius: var(--r-sm);
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  input[type="number"]::placeholder { color: var(--text-faint); }
+  input[type="number"]:hover { border-color: var(--line-strong); background: var(--surface-3); }
+  input[type="number"]:focus-visible {
+    outline: none;
+    border-color: var(--accent-line);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  /* ---- Topic list ---- */
+  .topic-list { display: grid; gap: var(--s-3); margin-bottom: var(--s-6); }
+
+  .topic {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    width: 100%;
+    text-align: left;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 16px 18px;
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease, transform .08s ease;
+  }
+  .topic:hover { background: var(--surface-3); border-color: var(--line-strong); }
+  .topic:focus-visible {
+    outline: none;
+    border-color: var(--accent-line);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .topic:active { transform: translateY(1px); }
+
+  .topic .check {
+    flex: none;
+    width: 20px; height: 20px;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    color: transparent;
+    transition: all .15s ease;
+  }
+  .topic-name {
+    font-family: var(--font-mono);
+    font-size: var(--t-base);
+    flex: 1;
+  }
+  .topic-count {
+    font-family: var(--font-mono);
+    font-size: var(--t-sm);
+    color: var(--text-faint);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .topic.selected {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+  }
+  .topic.selected .check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .topic.selected .topic-count {
+    color: var(--accent);
+    border-color: var(--accent-line);
+    background: transparent;
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    font: inherit;
+    font-weight: 600;
+    border-radius: var(--r-sm);
+    padding: 12px 22px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background .15s ease, border-color .15s ease, transform .08s ease, opacity .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent-line);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+  .btn-primary:hover { background: var(--accent-strong); }
+  .btn-primary:disabled {
+    background: var(--surface-3);
+    color: var(--text-faint);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-ghost {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--line-strong);
+  }
+  .btn-ghost:hover { background: var(--surface-3); border-color: var(--line-strong); }
+
+  .btn-block { width: 100%; justify-content: center; }
+
+  /* ---- Quiz ---- */
+  .quiz-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--s-5);
+  }
+  .progress-text {
+    font-family: var(--font-mono);
+    font-size: var(--t-sm);
+    color: var(--text-faint);
+    letter-spacing: .04em;
+  }
+  .progress-text b { color: var(--text); font-weight: 600; }
+  .progress-track {
+    width: 160px; height: 6px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, var(--accent-strong), var(--accent));
+    border-radius: 999px;
+  }
+
+  .question {
+    font-size: var(--t-lg);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+    margin: 0 0 var(--s-5);
+  }
+
+  .options { display: grid; gap: var(--s-3); margin-bottom: var(--s-5); }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    width: 100%;
+    text-align: left;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 15px 18px;
+    color: var(--text);
+    font: inherit;
+    cursor: default;
+  }
+  .option .marker {
+    flex: none;
+    width: 22px; height: 22px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line-strong);
+    display: grid; place-items: center;
+    color: transparent;
+    font-size: 12px;
+  }
+  .option .label { flex: 1; }
+  .option .tag {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* answered: neutral options dimmed */
+  .option.neutral { opacity: .5; }
+
+  .option.correct {
+    border-color: var(--good-line);
+    background: var(--good-soft);
+  }
+  .option.correct .marker {
+    background: var(--good);
+    border-color: var(--good);
+    color: #04150f;
+  }
+  .option.correct .tag { color: var(--good); }
+
+  .option.incorrect {
+    border-color: var(--bad-line);
+    background: var(--bad-soft);
+  }
+  .option.incorrect .marker {
+    background: var(--bad);
+    border-color: var(--bad);
+    color: #260910;
+  }
+  .option.incorrect .tag { color: var(--bad); }
+
+  /* ---- Reveal / explanation ---- */
+  .reveal {
+    border-radius: var(--r-md);
+    padding: 18px 20px;
+    margin-bottom: var(--s-5);
+    border: 1px solid var(--bad-line);
+    background: var(--bad-soft);
+  }
+  .reveal-head {
+    display: flex; align-items: center; gap: var(--s-2);
+    font-weight: 700;
+    color: var(--bad);
+    font-size: var(--t-base);
+    margin-bottom: var(--s-2);
+    letter-spacing: .01em;
+  }
+  .reveal p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--t-base);
+    line-height: 1.6;
+  }
+  .reveal code {
+    font-family: var(--font-mono);
+    font-size: .92em;
+    color: var(--text);
+    background: var(--bg);
+    padding: 1px 5px;
+    border-radius: 5px;
+  }
+
+  .quiz-foot { display: flex; justify-content: flex-end; }
+
+  /* ---- Results ---- */
+  .score-block {
+    text-align: center;
+    padding: var(--s-6) var(--s-4) var(--s-7);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: var(--s-6);
+  }
+  .score-eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: var(--s-3);
+  }
+  .score-number {
+    font-size: var(--t-2xl);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-number .of { color: var(--text-faint); font-weight: 500; }
+  .score-number .got { color: var(--accent); }
+  .score-sub { color: var(--text-muted); margin-top: var(--s-3); font-size: var(--t-base); }
+
+  .review-title {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 0 0 var(--s-4);
+  }
+  .review-list { display: grid; gap: var(--s-4); margin-bottom: var(--s-6); }
+
+  .review-item {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--bad);
+    border-radius: var(--r-md);
+    padding: 18px 20px;
+  }
+  .review-q { font-weight: 600; margin: 0 0 var(--s-3); font-size: var(--t-md); }
+  .answer-line {
+    display: flex;
+    gap: var(--s-3);
+    font-size: var(--t-sm);
+    margin-bottom: var(--s-2);
+    align-items: baseline;
+  }
+  .answer-line .key {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    flex: none;
+    width: 92px;
+    color: var(--text-faint);
+  }
+  .answer-line.yours .val { color: var(--bad); }
+  .answer-line.correct .val { color: var(--good); }
+  .answer-line .val { color: var(--text); }
+  .review-exp {
+    margin: var(--s-3) 0 0;
+    color: var(--text-muted);
+    font-size: var(--t-sm);
+    line-height: 1.6;
+    border-top: 1px solid var(--line);
+    padding-top: var(--s-3);
+  }
+
+  @media (max-width: 560px) {
+    .page { padding: var(--s-6) var(--s-4) 64px; }
+    .card { padding: var(--s-5); }
+    .progress-track { width: 96px; }
+    .score-number { font-size: 40px; }
+    .answer-line { flex-direction: column; gap: 2px; }
+    .answer-line .key { width: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ SCREEN 1 ============ -->
+  <p class="screen-label">1 — Topic Picker</p>
+  <section class="card" aria-label="Topic picker">
+    <p class="eyebrow">Interview Prep</p>
+    <h1>Pick a topic</h1>
+    <p class="subhead">Choose a subject and we'll build your quiz.</p>
+
+    <div class="field">
+      <label for="qcount">Number of questions <span class="hint">(blank = all)</span></label>
+      <input id="qcount" type="number" min="1" placeholder="all" inputmode="numeric" />
+    </div>
+
+    <div class="topic-list" role="listbox" aria-label="Topics">
+      <button class="topic selected" role="option" aria-selected="true">
+        <span class="check" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="topic-name">python</span>
+        <span class="topic-count">12</span>
+      </button>
+
+      <button class="topic" role="option" aria-selected="false">
+        <span class="check" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="topic-name">sql</span>
+        <span class="topic-count">8</span>
+      </button>
+
+      <button class="topic" role="option" aria-selected="false">
+        <span class="check" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="topic-name">system-design</span>
+        <span class="topic-count">5</span>
+      </button>
+
+      <button class="topic" role="option" aria-selected="false">
+        <span class="check" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="topic-name">javascript</span>
+        <span class="topic-count">15</span>
+      </button>
+    </div>
+
+    <button class="btn btn-primary btn-block">Start quiz</button>
+  </section>
+
+  <div class="divider" role="separator"></div>
+
+  <!-- ============ SCREEN 2 ============ -->
+  <p class="screen-label">2 — Quiz (answered)</p>
+  <section class="card" aria-label="Quiz question, answered">
+    <div class="quiz-top">
+      <span class="progress-text">Question <b>2</b> of <b>5</b></span>
+      <div class="progress-track" aria-hidden="true"><div class="progress-fill"></div></div>
+    </div>
+
+    <h2 class="question">What does CPython's GIL protect?</h2>
+
+    <div class="options">
+      <button class="option neutral" disabled>
+        <span class="marker" aria-hidden="true">A</span>
+        <span class="label">Disk I/O buffering between threads</span>
+      </button>
+
+      <button class="option incorrect" disabled aria-label="Your answer, incorrect">
+        <span class="marker" aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </span>
+        <span class="label">GPU memory allocation</span>
+        <span class="tag">Your answer</span>
+      </button>
+
+      <button class="option correct" disabled aria-label="Correct answer">
+        <span class="marker" aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 4.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="label">Access to Python objects' reference counts</span>
+        <span class="tag">Correct</span>
+      </button>
+
+      <button class="option neutral" disabled>
+        <span class="marker" aria-hidden="true">D</span>
+        <span class="label">The order of import statements</span>
+      </button>
+    </div>
+
+    <div class="reveal" role="status">
+      <div class="reveal-head">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M5.2 5.2l5.6 5.6M10.8 5.2l-5.6 5.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Incorrect
+      </div>
+      <p>The GIL serializes access to interpreter state, notably <code>refcounts</code>, so only one thread executes Python bytecode at a time.</p>
+    </div>
+
+    <div class="quiz-foot">
+      <button class="btn btn-primary">
+        Next
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <div class="divider" role="separator"></div>
+
+  <!-- ============ SCREEN 3 ============ -->
+  <p class="screen-label">3 — Results</p>
+  <section class="card" aria-label="Results">
+    <div class="score-block">
+      <div class="score-eyebrow">Your score</div>
+      <div class="score-number"><span class="got">3</span> <span class="of">/ 5</span></div>
+      <p class="score-sub">Solid run on python. Two to review below.</p>
+    </div>
+
+    <p class="review-title">Review — 2 missed</p>
+    <div class="review-list">
+      <article class="review-item">
+        <h3 class="review-q">What does CPython's GIL protect?</h3>
+        <div class="answer-line yours">
+          <span class="key">Your answer</span>
+          <span class="val">GPU memory allocation</span>
+        </div>
+        <div class="answer-line correct">
+          <span class="key">Correct</span>
+          <span class="val">Access to Python objects' reference counts</span>
+        </div>
+        <p class="review-exp">The GIL serializes access to interpreter state, notably refcounts, so only one thread executes Python bytecode at a time.</p>
+      </article>
+
+      <article class="review-item">
+        <h3 class="review-q">Which structure backs a Python <code style="font-family:var(--font-mono);font-size:.9em;background:var(--bg);padding:1px 5px;border-radius:5px;">dict</code> lookup?</h3>
+        <div class="answer-line yours">
+          <span class="key">Your answer</span>
+          <span class="val">Balanced binary tree</span>
+        </div>
+        <div class="answer-line correct">
+          <span class="key">Correct</span>
+          <span class="val">Open-addressing hash table</span>
+        </div>
+        <p class="review-exp">CPython dicts use an open-addressing hash table with perturbation probing, giving average O(1) lookups — not a tree.</p>
+      </article>
+    </div>
+
+    <button class="btn btn-ghost btn-block">Pick another topic</button>
+  </section>
+
+</div>
+</body>
+</html>

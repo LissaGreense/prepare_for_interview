@@ -36,23 +36,39 @@ const missed = computed<MissedQuestion[]>(() =>
 </script>
 
 <template>
-  <main>
-    <h1>Results</h1>
-    <p>Score: {{ store.score }} / {{ store.questions.length }}</p>
+  <section class="card" aria-label="Results">
+    <div class="score-block">
+      <div class="score-eyebrow">Your score</div>
+      <div class="score-number">
+        <span class="got">{{ store.score }}</span>
+        <span class="of">/ {{ store.questions.length }}</span>
+      </div>
+      <p v-if="missed.length" class="score-sub">
+        {{ missed.length }} to review below.
+      </p>
+      <p v-else class="score-sub">Perfect score — nothing to review.</p>
+    </div>
 
-    <section v-if="missed.length">
-      <h2>Review</h2>
-      <ul>
-        <li v-for="m in missed" :key="m.id">
-          <p>{{ m.question }}</p>
-          <p>Your answer: {{ m.chosen ?? 'No answer' }}</p>
-          <p>Correct answer: {{ m.correct }}</p>
-          <p v-if="m.explanation">{{ m.explanation }}</p>
-        </li>
-      </ul>
-    </section>
-    <p v-else>Perfect score — nothing to review.</p>
+    <template v-if="missed.length">
+      <p class="review-title">Review — {{ missed.length }} missed</p>
+      <div class="review-list">
+        <article v-for="m in missed" :key="m.id" class="review-item">
+          <h3 class="review-q">{{ m.question }}</h3>
+          <div class="answer-line yours">
+            <span class="key">Your answer</span>
+            <span class="val">{{ m.chosen ?? 'No answer' }}</span>
+          </div>
+          <div class="answer-line correct">
+            <span class="key">Correct</span>
+            <span class="val">{{ m.correct }}</span>
+          </div>
+          <p v-if="m.explanation" class="review-exp">{{ m.explanation }}</p>
+        </article>
+      </div>
+    </template>
 
-    <button @click="store.reset()">Pick another topic</button>
-  </main>
+    <button class="btn btn-ghost btn-block" @click="store.reset()">
+      Pick another topic
+    </button>
+  </section>
 </template>
