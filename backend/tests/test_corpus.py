@@ -1,0 +1,79 @@
+"""Tests for the corpus reader and the topic/quiz endpoints.
+
+The filesystem is the boundary worth exercising, so these tests write real
+fixture files into a temp dir and point the reader at it via the `base` seam.
+"""
+
+import json
+from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
+
+from app.corpus import TopicNotFoundError, list_topics, load_quiz
+from app.main import app
+
+VALID = {
+    "question": "What does CPython's GIL protect?",
+    "options": ["refcounts", "the filesystem", "GPU memory", "sockets"],
+    "correct": 0,
+    "explanation": "It serializes access to interpreter state.",
+}
+
+
+def _write(path: Path, payload) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(payload if isinstance(payload, str) else json.dumps(payload))
+
+
+def test_load_quiz_skips_malformed_keeps_siblings(tmp_path: Path) -> None:
+    _write(tmp_path / "python" / "good.json", VALID)
+    _write(tmp_path / "python" / "bad_json.json", "{not valid json")
+    _write(tmp_path / "python" / "out_of_range.json", {**VALID, "correct": 9})
+    _write(tmp_path / "python" / "wrong_schema.json", {"question": "no options"})
+
+    questions = load_quiz("python", base=tmp_path)
+
+    assert [q.id for q in questions] == ["good"]
+    assert questions[0].topic == "python"
+
+
+def test_load_quiz_unknown_topic_raises(tmp_path: Path) -> None:
+    with pytest.raises(TopicNotFoundError):
+        load_quiz("nope", base=tmp_path)
+
+
+def test_list_topics_counts_only_valid(tmp_path: Path) -> None:
+    _write(tmp_path / "python" / "a.json", VALID)
+    _write(tmp_path / "python" / "b.json", VALID)
+    _write(tmp_path / "python" / "bad.json", "{nope")
+    _write(tmp_path / "sql" / "a.json", VALID)
+    _write(tmp_path / "empty" / "all_bad.json", {**VALID, "correct": 99})
+
+    topics = list_topics(base=tmp_path)
+
+    assert [t.model_dump() for t in topics] == [
+        {"topic": "empty", "count": 0},
+        {"topic": "python", "count": 2},
+        {"topic": "sql", "count": 1},
+    ]
+
+
+def test_list_topics_missing_base_is_empty(tmp_path: Path) -> None:
+    assert list_topics(base=tmp_path / "does-not-exist") == []
+
+
+def test_endpoints_against_real_corpus() -> None:
+    client = TestClient(app)
+
+    topics = client.get("/topics")
+    assert topics.status_code == 200
+    by_name = {t["topic"]: t["count"] for t in topics.json()}
+    assert by_name.get("python", 0) >= 1
+
+    quiz = client.get("/quiz", params={"topic": "python"})
+    assert quiz.status_code == 200
+    first = quiz.json()[0]
+    assert first.keys() >= {"id", "topic", "question", "options", "correct"}
+
+    assert client.get("/quiz", params={"topic": "nope"}).status_code == 404

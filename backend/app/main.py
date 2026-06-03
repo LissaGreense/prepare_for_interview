@@ -3,8 +3,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .corpus import TopicNotFoundError, load_quiz
-from .models import Question
+from .corpus import TopicNotFoundError, list_topics, load_quiz
+from .models import Question, Topic
 
 app = FastAPI(title="Interview Prep Quiz")
 
@@ -21,6 +21,12 @@ app.add_middleware(
 def health() -> dict[str, str]:
     """Liveness probe. Returns a static ok payload."""
     return {"status": "ok"}
+
+
+@app.get("/topics")
+def topics() -> list[Topic]:
+    """Return every topic with its count of valid questions, read from disk."""
+    return list_topics()
 
 
 @app.get("/quiz")
