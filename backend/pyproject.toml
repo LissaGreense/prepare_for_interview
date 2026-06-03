@@ -1,0 +1,19 @@
+[project]
+name = "interview-quiz-backend"
+version = "0.1.0"
+description = "Backend for the local interview-prep quiz app"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "httpx",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
