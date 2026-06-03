@@ -2,16 +2,20 @@
 
 `select_questions` is pure, so it is driven directly with a controlled list of
 Question objects. The /quiz route's `count` param is also exercised at the HTTP
-boundary via TestClient against the real corpus. Randomness is asserted without
-flakiness: orderings are checked as permutations/subsets, and the "is it
-actually shuffled" check sweeps fixed seeds so the result is deterministic.
+boundary via TestClient, pointed at a fixture corpus (the real `questions/` dir
+is gitignored, local-only content). Randomness is asserted without flakiness:
+orderings are checked as permutations/subsets, and the "is it actually
+shuffled" check sweeps fixed seeds so the result is deterministic.
 """
 
+import json
 import random
+from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from app.corpus import select_questions
+from app import main
+from app.corpus import load_quiz, select_questions
 from app.main import app
 from app.models import Question
 
@@ -108,14 +112,24 @@ def test_order_is_randomized_across_seeds() -> None:
     assert len(orderings) > 1
 
 
-def test_http_count_caps_result() -> None:
-    """The /quiz route honors `count` end-to-end (real corpus has >=2 python q)."""
+def test_http_count_caps_result(tmp_path: Path, monkeypatch) -> None:
+    """The /quiz route honors `count` end-to-end, against a fixture corpus.
+
+    The real `questions/` dir is gitignored local content, so this builds its
+    own 3-question fixture topic and points the route's loader at it.
+    """
+    sample = {"question": "Q?", "options": ["a", "b"], "correct": 0}
+    topic_dir = tmp_path / "python"
+    topic_dir.mkdir(parents=True)
+    for i in range(3):
+        (topic_dir / f"q{i}.json").write_text(json.dumps(sample))
+    monkeypatch.setattr(main, "load_quiz", lambda topic: load_quiz(topic, base=tmp_path))
+
     client = TestClient(app)
 
     full = client.get("/quiz", params={"topic": "python"})
     assert full.status_code == 200
-    available = len(full.json())
-    assert available >= 2
+    assert len(full.json()) == 3
 
     capped = client.get("/quiz", params={"topic": "python", "count": 1})
     assert capped.status_code == 200
@@ -126,4 +140,4 @@ def test_http_count_caps_result() -> None:
 
     over = client.get("/quiz", params={"topic": "python", "count": 999})
     assert over.status_code == 200
-    assert len(over.json()) == available
+    assert len(over.json()) == 3

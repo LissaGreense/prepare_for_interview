@@ -101,16 +101,26 @@ def test_malformed_manifest_falls_back_to_folder_name(tmp_path: Path) -> None:
 
 
 def test_endpoints_against_real_corpus() -> None:
+    """Smoke-test the wired app. The question bank lives in a gitignored,
+    local-only `questions/` dir, so this asserts shape and behavior without
+    assuming any specific topic exists (the fixture-based tests above carry
+    the real coverage)."""
     client = TestClient(app)
 
     topics = client.get("/topics")
     assert topics.status_code == 200
-    by_name = {t["topic"]: t["count"] for t in topics.json()}
-    assert by_name.get("python", 0) >= 1
+    payload = topics.json()
+    assert isinstance(payload, list)
+    for t in payload:
+        assert t.keys() >= {"topic", "title", "count"}
 
-    quiz = client.get("/quiz", params={"topic": "python"})
-    assert quiz.status_code == 200
-    first = quiz.json()[0]
-    assert first.keys() >= {"id", "topic", "question", "options", "correct"}
+    # If any topic exists locally, a quiz for it returns the documented shape.
+    if payload:
+        quiz = client.get("/quiz", params={"topic": payload[0]["topic"]})
+        assert quiz.status_code == 200
+        if quiz.json():
+            first = quiz.json()[0]
+            assert first.keys() >= {"id", "topic", "question", "options", "correct"}
 
-    assert client.get("/quiz", params={"topic": "nope"}).status_code == 404
+    # An unknown topic is always a 404, regardless of local content.
+    assert client.get("/quiz", params={"topic": "no-such-topic"}).status_code == 404
