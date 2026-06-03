@@ -1,46 +1,42 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { fetchQuiz } from '../api'
-import type { Question } from '../types'
+import { computed } from 'vue'
+import { useQuizStore } from '../stores/quiz'
 
-const question = ref<Question | null>(null)
-const selected = ref<number | null>(null)
-const error = ref<string | null>(null)
+const store = useQuizStore()
 
-onMounted(async () => {
-  try {
-    const questions = await fetchQuiz('python')
-    question.value = questions[0] ?? null
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load quiz'
-  }
-})
+/** The question currently being answered. */
+const question = computed(() => store.questions[store.currentIndex])
+/** The recorded answer for the current question, or `null` if unanswered. */
+const answer = computed(() => store.answers[store.currentIndex] ?? null)
+/** Whether the current question has been answered. */
+const answered = computed(() => answer.value !== null)
+/** Whether the current question is the last in the run. */
+const isLast = computed(() => store.currentIndex === store.questions.length - 1)
 
-/** Record the user's choice. Grading happens at display time. */
-function choose(index: number): void {
-  if (selected.value === null) {
-    selected.value = index
-  }
+/**
+ * Record the chosen option. Display order matches original order today; the
+ * shuffle task translates clicked positions back to original before this call.
+ */
+function choose(originalOptionIndex: number): void {
+  store.recordAnswer(originalOptionIndex)
 }
 </script>
 
 <template>
   <main>
-    <p v-if="error">{{ error }}</p>
-    <p v-else-if="!question">Loading…</p>
-    <section v-else>
+    <section v-if="question">
+      <p>Question {{ store.currentIndex + 1 }} of {{ store.questions.length }}</p>
       <h2>{{ question.question }}</h2>
       <ul>
         <li v-for="(option, i) in question.options" :key="i">
-          <button :disabled="selected !== null" @click="choose(i)">
-            {{ option }}
-          </button>
+          <button :disabled="answered" @click="choose(i)">{{ option }}</button>
         </li>
       </ul>
 
-      <div v-if="selected !== null">
-        <p>{{ selected === question.correct ? 'Correct!' : 'Incorrect.' }}</p>
+      <div v-if="answered">
+        <p>{{ answer === question.correct ? 'Correct!' : 'Incorrect.' }}</p>
         <p v-if="question.explanation">{{ question.explanation }}</p>
+        <button @click="store.next()">{{ isLast ? 'See results' : 'Next' }}</button>
       </div>
     </section>
   </main>
