@@ -3,7 +3,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .corpus import TopicNotFoundError, list_topics, load_quiz
+from .corpus import TopicNotFoundError, list_topics, load_quiz, select_questions
 from .models import Question, Topic
 
 app = FastAPI(title="Interview Prep Quiz")
@@ -30,9 +30,14 @@ def topics() -> list[Topic]:
 
 
 @app.get("/quiz")
-def quiz(topic: str) -> list[Question]:
-    """Return all questions for a topic. Unknown topic -> 404."""
+def quiz(topic: str, count: int | None = None) -> list[Question]:
+    """Return a topic's questions in random order, optionally capped at `count`.
+
+    `count` omitted returns the whole topic shuffled; a `count` larger than the
+    topic returns all of it. Unknown topic -> 404.
+    """
     try:
-        return load_quiz(topic)
+        questions = load_quiz(topic)
     except TopicNotFoundError:
         raise HTTPException(status_code=404, detail=f"Unknown topic: {topic}")
+    return select_questions(questions, count)

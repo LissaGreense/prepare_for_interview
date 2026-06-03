@@ -8,6 +8,7 @@ files appear immediately.
 
 import json
 import logging
+import random
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -69,6 +70,25 @@ def load_quiz(topic: str, base: Path = QUESTIONS_DIR) -> list[Question]:
     if not topic_dir.is_dir():
         raise TopicNotFoundError(topic)
     return _read_topic(topic_dir, topic)
+
+
+def select_questions(
+    questions: list[Question], count: int | None = None
+) -> list[Question]:
+    """Return questions in randomized order, optionally capped at `count`.
+
+    Args:
+        questions: The pool to draw from (e.g. a topic's loaded questions).
+        count: How many to return. None returns the whole pool shuffled. A
+            count larger than the pool returns the whole pool (not an error).
+            A count <= 0 returns an empty list.
+
+    Returns:
+        A new list of distinct questions in random order.
+    """
+    pool_size = len(questions)
+    k = pool_size if count is None else max(0, min(count, pool_size))
+    return random.sample(questions, k=k)
 
 
 def list_topics(base: Path = QUESTIONS_DIR) -> list[Topic]:
