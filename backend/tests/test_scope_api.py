@@ -4,10 +4,9 @@ The service's graph singleton is swapped for a fake-injected graph so these run
 offline (no network, no LLM).
 """
 
-from typing import Any
-
 import pytest
 from fastapi.testclient import TestClient
+from pytest import MonkeyPatch
 
 from app.generation import service
 from app.generation.scoping import build_scoping_graph
@@ -16,7 +15,7 @@ from tests.fakes import fake_expand, fake_fetch
 
 
 @pytest.fixture
-def client(monkeypatch: Any) -> TestClient:
+def client(monkeypatch: MonkeyPatch) -> TestClient:
     fake_graph = build_scoping_graph(expand_fn=fake_expand, fetch_fn=fake_fetch)
     monkeypatch.setattr(service, "_GRAPH", fake_graph)
     return TestClient(app)

@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import operator
 from collections.abc import Callable
-from typing import Annotated, Any, Literal, TypedDict
+from typing import Annotated, Literal, TypedDict
 
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
@@ -89,7 +89,7 @@ class ScopingState(TypedDict, total=False):
     cursor_id: str | None
     depth: int
     deeper: bool
-    scope: dict[str, Any]
+    scope: StudyScope
 
 
 #: (query, parent_id) -> child topic nodes. `query` is the root topic at the top
@@ -208,7 +208,7 @@ def build_scoping_graph(
                 for doc in state.get("docs", [])
             ],
         )
-        return {"scope": scope.model_dump()}
+        return {"scope": scope}
 
     builder = StateGraph(ScopingState)
     builder.add_node("expand", expand)

@@ -11,7 +11,7 @@ import logging
 import os
 import re
 import time
-from typing import Any, Literal, cast
+from typing import Literal, TypedDict, cast
 
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.tools import DuckDuckGoSearchResults
@@ -22,6 +22,15 @@ from .llm import structured
 from .scoping import FetchedDoc, TopicNode
 
 _log = logging.getLogger(__name__)
+
+
+class SearchHit(TypedDict, total=False):
+    """One DuckDuckGo result. All keys optional — the provider may omit any."""
+
+    title: str
+    snippet: str
+    link: str
+
 
 # WebBaseLoader nags if this is unset; identify our requests politely.
 os.environ.setdefault("USER_AGENT", "prepare-for-interview-quizgen")
@@ -55,11 +64,11 @@ def _child_id(parent_id: str | None, label: str) -> str:
     return f"{parent_id}/{slug}" if parent_id else slug
 
 
-def _search(query: str, *, retries: int = 3) -> list[dict[str, Any]]:
+def _search(query: str, *, retries: int = 3) -> list[SearchHit]:
     """DuckDuckGo search with simple linear backoff (it rate-limits unpredictably)."""
     for attempt in range(retries):
         try:
-            return cast(list[dict[str, Any]], _SEARCH.invoke(query))
+            return cast(list[SearchHit], _SEARCH.invoke(query))
         except Exception as exc:
             if attempt == retries - 1:
                 _log.warning(

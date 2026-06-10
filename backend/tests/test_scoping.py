@@ -96,14 +96,14 @@ def test_deepen_loops_back_and_fans_out_to_docs() -> None:
     assert "__interrupt__" not in final
 
     scope = final["scope"]
-    assert scope["root_topic"] == "web development"
-    topics = {t["id"]: t for t in scope["topics"]}
+    assert scope.root_topic == "web development"
+    topics = {t.id: t for t in scope.topics}
     assert set(topics) == {"rest", "react/hooks", "react/context"}
     # React was drilled into, so it is not itself a leaf.
     assert "react" not in topics
     # Each leaf carries its fetched doc text + sources.
-    assert topics["react/hooks"]["doc_text"] == "docs for Hooks"
-    assert topics["rest"]["sources"] == ["https://example.test/rest"]
+    assert topics["react/hooks"].doc_text == "docs for Hooks"
+    assert topics["rest"].sources == ["https://example.test/rest"]
 
 
 def test_resume_requires_same_thread_id() -> None:
@@ -124,7 +124,7 @@ def test_no_selection_finishes_with_empty_scope() -> None:
 
     final = _resume(graph, "t-empty", [], None)
     assert "__interrupt__" not in final
-    assert final["scope"]["topics"] == []
+    assert final["scope"].topics == []
 
 
 def test_deepen_is_capped() -> None:
@@ -148,4 +148,4 @@ def test_deepen_is_capped() -> None:
     # A drill request here is ignored and the graph finishes.
     final = _resume(graph, "t-cap", [cursor], cursor)
     assert "__interrupt__" not in final
-    assert any(t["id"] == cursor for t in final["scope"]["topics"])
+    assert any(t.id == cursor for t in final["scope"].topics)

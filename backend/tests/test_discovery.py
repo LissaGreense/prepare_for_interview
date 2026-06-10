@@ -2,9 +2,8 @@
 (DuckDuckGo search, the LLM, and the web loader). No network, no LLM.
 """
 
-from typing import Any
-
 from langchain_core.documents import Document
+from pytest import MonkeyPatch
 
 from app.generation import discovery
 from app.generation.discovery import Subtopic, SubtopicList
@@ -13,10 +12,10 @@ from app.generation.discovery import Subtopic, SubtopicList
 class _FakeRunnable:
     """Stands in for the structured-output runnable; returns a fixed result."""
 
-    def __init__(self, result: Any) -> None:
+    def __init__(self, result: SubtopicList) -> None:
         self._result = result
 
-    def invoke(self, _prompt: Any) -> Any:
+    def invoke(self, _prompt: object) -> SubtopicList:
         return self._result
 
 
@@ -27,7 +26,7 @@ def test_slugify_and_child_id() -> None:
     assert discovery._child_id("react", "Custom Hooks") == "react/custom-hooks"
 
 
-def test_default_expand_builds_topic_nodes(monkeypatch: Any) -> None:
+def test_default_expand_builds_topic_nodes(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(
         discovery, "_search", lambda q, **k: [{"title": "t", "snippet": "s"}]
     )
@@ -48,7 +47,7 @@ def test_default_expand_builds_topic_nodes(monkeypatch: Any) -> None:
     assert nodes[1]["kind"] == "technology"
 
 
-def test_default_expand_nests_child_ids_under_parent(monkeypatch: Any) -> None:
+def test_default_expand_nests_child_ids_under_parent(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(discovery, "_search", lambda q, **k: [])
     result = SubtopicList(subtopics=[Subtopic(label="Hooks", kind="subtopic")])
     monkeypatch.setattr(
@@ -61,7 +60,7 @@ def test_default_expand_nests_child_ids_under_parent(monkeypatch: Any) -> None:
     assert nodes[0]["parent_id"] == "react"
 
 
-def test_default_fetch_loads_and_chunks(monkeypatch: Any) -> None:
+def test_default_fetch_loads_and_chunks(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(
         discovery,
         "_search",
@@ -69,7 +68,7 @@ def test_default_fetch_loads_and_chunks(monkeypatch: Any) -> None:
     )
 
     class FakeLoader:
-        def __init__(self, urls: Any) -> None:
+        def __init__(self, urls: list[str]) -> None:
             self.urls = urls
 
         def load(self) -> list[Document]:
@@ -84,7 +83,7 @@ def test_default_fetch_loads_and_chunks(monkeypatch: Any) -> None:
     assert "hello world" in doc["text"]
 
 
-def test_default_fetch_with_no_search_results(monkeypatch: Any) -> None:
+def test_default_fetch_with_no_search_results(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(discovery, "_search", lambda q, **k: [])
 
     doc = discovery.default_fetch("x", "X")
@@ -93,13 +92,13 @@ def test_default_fetch_with_no_search_results(monkeypatch: Any) -> None:
     assert doc["sources"] == []
 
 
-def test_default_fetch_survives_loader_failure(monkeypatch: Any) -> None:
+def test_default_fetch_survives_loader_failure(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(
         discovery, "_search", lambda q, **k: [{"link": "https://a.test"}]
     )
 
     class BoomLoader:
-        def __init__(self, urls: Any) -> None:
+        def __init__(self, urls: list[str]) -> None:
             pass
 
         def load(self) -> list[Document]:

@@ -77,7 +77,9 @@ def _interpret(thread_id: str, result: dict[str, Any]) -> ScopeState:
     return ScopeState(
         status="done",
         thread_id=thread_id,
-        scope=StudyScope(**result["scope"]),
+        # `assemble` stores a StudyScope; across a checkpoint it round-trips as a
+        # dict. model_validate accepts either.
+        scope=StudyScope.model_validate(result["scope"]),
     )
 
 
