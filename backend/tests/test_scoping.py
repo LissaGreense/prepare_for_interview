@@ -8,17 +8,19 @@ These exercise the real LangGraph machinery — checkpointer, ``interrupt()``,
 from typing import Any
 
 import pytest
+from langchain_core.runnables import RunnableConfig
+from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
 
-from app.generation.scoping import MAX_DEEPEN_LEVELS, build_scoping_graph
+from app.generation.scoping import (
+    MAX_DEEPEN_LEVELS,
+    ScopingState,
+    build_scoping_graph,
+)
 from tests.fakes import fake_expand, fake_fetch
 
-# `graph` is typed Any in these helpers on purpose: the compiled graph's
-# `invoke` is heavily overloaded and a plain config dict literal doesn't match
-# its `RunnableConfig` TypedDict overloads. The behavior we test is unaffected.
 
-
-def _graph() -> Any:
+def _graph() -> CompiledStateGraph:
     return build_scoping_graph(expand_fn=fake_expand, fetch_fn=fake_fetch)
 
 
@@ -29,10 +31,12 @@ def _interrupt_payload(result: dict[str, Any]) -> dict[str, Any]:
     return interrupts[0].value
 
 
-def _start(graph: Any, root_topic: str, thread_id: str) -> dict[str, Any]:
+def _start(
+    graph: CompiledStateGraph, root_topic: str, thread_id: str
+) -> dict[str, Any]:
     """Begin a scoping run; returns the first paused state (an interrupt)."""
-    config = {"configurable": {"thread_id": thread_id}}
-    initial: dict[str, Any] = {
+    config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
+    initial: ScopingState = {
         "root_topic": root_topic,
         "tree": [],
         "selected_leaf_ids": [],
@@ -45,10 +49,13 @@ def _start(graph: Any, root_topic: str, thread_id: str) -> dict[str, Any]:
 
 
 def _resume(
-    graph: Any, thread_id: str, selected: list[str], deeper_into: str | None
+    graph: CompiledStateGraph,
+    thread_id: str,
+    selected: list[str],
+    deeper_into: str | None,
 ) -> dict[str, Any]:
     """Resume a paused run on `thread_id` with the human's pick."""
-    config = {"configurable": {"thread_id": thread_id}}
+    config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
     cmd: Command[Any] = Command(
         resume={"selected": selected, "deeper_into": deeper_into}
     )

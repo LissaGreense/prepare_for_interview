@@ -51,6 +51,13 @@ class FetchedDoc(TypedDict):
     sources: list[str]
 
 
+class FetchPayload(TypedDict):
+    """Per-leaf payload handed to ``fetch_docs`` by each ``Send`` in the fan-out."""
+
+    topic_id: str
+    label: str
+
+
 class ScopeTopic(BaseModel):
     """A selected leaf topic plus the documentation gathered for it."""
 
@@ -181,7 +188,7 @@ def build_scoping_graph(
             for tid in leaves
         ]
 
-    def fetch_docs(payload: dict[str, Any]) -> ScopingState:
+    def fetch_docs(payload: FetchPayload) -> ScopingState:
         """Fetch docs for one selected leaf (runs once per ``Send``, in parallel)."""
         doc = fetch_fn(payload["topic_id"], payload["label"])
         return {"docs": [doc]}  # appended via operator.add across parallel branches

@@ -11,17 +11,19 @@ from __future__ import annotations
 import uuid
 from typing import Any, Literal
 
+from langchain_core.runnables import RunnableConfig
+from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
 from pydantic import BaseModel
 
-from .scoping import StudyScope, build_scoping_graph
+from .scoping import ScopingState, StudyScope, build_scoping_graph
 
 # Lazily-built singleton so the graph (and its checkpointer) persist across
 # requests. Tests swap this for a fake-injected graph.
-_GRAPH: Any = None
+_GRAPH: CompiledStateGraph | None = None
 
 
-def _graph() -> Any:
+def _graph() -> CompiledStateGraph:
     global _GRAPH
     if _GRAPH is None:
         _GRAPH = build_scoping_graph()
@@ -82,8 +84,8 @@ def _interpret(thread_id: str, result: dict[str, Any]) -> ScopeState:
 def start(root_topic: str) -> ScopeState:
     """Begin a scoping session; returns the first pick prompt."""
     thread_id = uuid.uuid4().hex
-    config = {"configurable": {"thread_id": thread_id}}
-    initial: dict[str, Any] = {
+    config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
+    initial: ScopingState = {
         "root_topic": root_topic,
         "tree": [],
         "selected_leaf_ids": [],
@@ -97,7 +99,7 @@ def start(root_topic: str) -> ScopeState:
 
 def resume(thread_id: str, selected: list[str], deeper_into: str | None) -> ScopeState:
     """Resume a paused session with the user's pick. Returns the next pick or scope."""
-    config = {"configurable": {"thread_id": thread_id}}
+    config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
     graph = _graph()
     # Reject unknown threads up front: an unresumed thread has no persisted
     # checkpoint (no `next` nodes). Relying on a downstream node crashing would

@@ -17,11 +17,14 @@ Env vars:
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import TypeVar, cast
 
+from langchain_core.language_models import LanguageModelInput
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.runnables import Runnable
 from pydantic import BaseModel, SecretStr
+
+_SchemaT = TypeVar("_SchemaT", bound=BaseModel)
 
 
 def _provider() -> str:
@@ -61,15 +64,21 @@ def get_chat_model(*, temperature: float = 0.7) -> BaseChatModel:
 
 
 def structured(
-    schema: type[BaseModel], *, temperature: float = 0.7
-) -> Runnable[Any, Any]:
+    schema: type[_SchemaT], *, temperature: float = 0.7
+) -> Runnable[LanguageModelInput, _SchemaT]:
     """Return a runnable that emits an instance of `schema` (a Pydantic model).
+
+    Generic in `schema`, so ``structured(Foo).invoke(...)`` is statically typed
+    as ``Foo`` — no cast needed at the call site. ``with_structured_output``
+    erases the schema type to ``dict | BaseModel``, so we re-narrow it here once,
+    at the boundary, rather than at every call site.
 
     Picks the structured-output method per provider: grammar-constrained
     ``json_schema`` for the OpenAI-compatible LM Studio server (reliable even on
     small local models), tool-based ``function_calling`` for Anthropic.
     """
     method = "function_calling" if _provider() == "anthropic" else "json_schema"
-    return get_chat_model(temperature=temperature).with_structured_output(
+    runnable = get_chat_model(temperature=temperature).with_structured_output(
         schema, method=method
     )
+    return cast(Runnable[LanguageModelInput, _SchemaT], runnable)

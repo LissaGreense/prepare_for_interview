@@ -84,7 +84,7 @@ def default_expand(query: str, parent_id: str | None) -> list[TopicNode]:
         "(a concept/area).\n\n"
         f"Recent search context (use it to stay current):\n{context or '(none)'}"
     )
-    result = cast(SubtopicList, structured(SubtopicList).invoke(prompt))
+    result = structured(SubtopicList).invoke(prompt)
     return [
         TopicNode(
             id=_child_id(parent_id, st.label),
