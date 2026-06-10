@@ -16,6 +16,17 @@ dev = [
     "ruff",
     "mypy",
 ]
+# AI question-generator (Phase 1: interactive topic scoping). Optional so the
+# core quiz app installs without the LangGraph/LLM stack.
+gen = [
+    "langgraph",
+    "langchain-openai",       # ChatOpenAI -> LM Studio's OpenAI-compatible server
+    "langchain-anthropic",    # Claude, when QUIZGEN_LLM_PROVIDER=anthropic
+    "langchain-community",    # DuckDuckGoSearchResults + WebBaseLoader
+    "langchain-text-splitters",
+    "ddgs",                   # search backend (free, no key; formerly duckduckgo-search)
+    "beautifulsoup4",         # WebBaseLoader HTML parsing
+]
 
 [tool.setuptools.packages.find]
 include = ["app*"]
