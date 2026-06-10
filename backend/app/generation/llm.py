@@ -6,7 +6,9 @@ to use Claude instead. The scoping graph never sees the difference.
 
 Env vars:
   QUIZGEN_LLM_PROVIDER   "lmstudio" (default) | "anthropic"
-  QUIZGEN_LLM_MODEL      model id (default per provider)
+  QUIZGEN_LLM_MODEL      model id — REQUIRED for lmstudio (the id loaded in LM
+                         Studio, e.g. from `lms ps`); defaults to a Claude model
+                         for anthropic
   QUIZGEN_LLM_BASE_URL   LM Studio base URL (default http://localhost:1234/v1)
   QUIZGEN_LLM_API_KEY    LM Studio key (any non-empty string; default "lm-studio")
   ANTHROPIC_API_KEY      required when provider=anthropic
@@ -41,10 +43,16 @@ def get_chat_model(*, temperature: float = 0.7) -> BaseChatModel:
     if provider == "lmstudio":
         from langchain_openai import ChatOpenAI
 
+        model = os.getenv("QUIZGEN_LLM_MODEL")
+        if not model:
+            raise ValueError(
+                "QUIZGEN_LLM_MODEL is required for the lmstudio provider; set it to "
+                "the model id loaded in LM Studio (see `lms ps`)."
+            )
         return ChatOpenAI(
             base_url=os.getenv("QUIZGEN_LLM_BASE_URL", "http://localhost:1234/v1"),
             api_key=SecretStr(os.getenv("QUIZGEN_LLM_API_KEY", "lm-studio")),
-            model=os.getenv("QUIZGEN_LLM_MODEL", "google/gemma-4-e4b"),
+            model=model,
             temperature=temperature,
         )
     raise ValueError(

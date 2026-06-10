@@ -52,10 +52,12 @@ cycles — that is the gap LangGraph fills here.
 
 - **LLM provider: env-driven factory, swappable with no graph change** (`llm.py`).
   - **Default (dev/testing): local LM Studio** — OpenAI-compatible at
-    `http://localhost:1234/v1`, free. Verified: `google/gemma-4-e4b` (7.5B) returns
-    schema-valid structured output via `response_format: json_schema` (LM Studio
-    grammar-constrains, so structure holds even on a small model). Uses
-    `with_structured_output(Schema, method="json_schema")`.
+    `http://localhost:1234/v1`, free. Verified working with a small (~7B-class)
+    local model: it returns schema-valid structured output via
+    `response_format: json_schema` (LM Studio grammar-constrains, so structure
+    holds even on a small model). Uses `with_structured_output(Schema,
+    method="json_schema")`. Set `QUIZGEN_LLM_MODEL` to whatever model id you have
+    loaded.
   - **Quality option: Anthropic Claude** — set `QUIZGEN_LLM_PROVIDER=anthropic`
     (+ `ANTHROPIC_API_KEY`). Uses `method="function_calling"`.
 - **Search: DuckDuckGo** (`DuckDuckGoSearchResults`, package `ddgs`) — free, **no API
@@ -155,17 +157,18 @@ Dependencies live in the `gen` optional extra (`pip install -e ".[gen]"`): `lang
 
 ## Running it locally
 
-LM Studio (free, default):
+LM Studio (free, default) — start the server and load any chat model:
 
 ```bash
-/Users/sara/.lmstudio/bin/lms server start
-/Users/sara/.lmstudio/bin/lms load google/gemma-4-e4b
+lms server start
+lms load <your-model-id>      # then: lms ps  to see the served id
 ```
 
 Backend (from `backend/`, inside `.venv`):
 
 ```bash
 pip install -e ".[dev,gen]"
+export QUIZGEN_LLM_MODEL="<your-loaded-model-id>"   # required for lmstudio
 uvicorn app.main:app --reload --port 8000
 ```
 
