@@ -44,6 +44,9 @@ plugins = ["pydantic.mypy"]
 check_untyped_defs = true
 warn_unused_ignores = true
 warn_redundant_casts = true
+# Bare generics (e.g. a un-parameterized CompiledStateGraph) silently expand to
+# [Any, ...]; forbid them so that hidden Any can't creep back in.
+disallow_any_generics = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

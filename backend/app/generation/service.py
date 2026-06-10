@@ -12,18 +12,23 @@ import uuid
 from typing import Any, Literal
 
 from langchain_core.runnables import RunnableConfig
-from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
 from pydantic import BaseModel
 
-from .scoping import ResumePayload, ScopingState, StudyScope, build_scoping_graph
+from .scoping import (
+    ResumePayload,
+    ScopingGraph,
+    ScopingState,
+    StudyScope,
+    build_scoping_graph,
+)
 
 # Lazily-built singleton so the graph (and its checkpointer) persist across
 # requests. Tests swap this for a fake-injected graph.
-_GRAPH: CompiledStateGraph | None = None
+_GRAPH: ScopingGraph | None = None
 
 
-def _graph() -> CompiledStateGraph:
+def _graph() -> ScopingGraph:
     global _GRAPH
     if _GRAPH is None:
         _GRAPH = build_scoping_graph()

@@ -103,6 +103,14 @@ class ScopingState(TypedDict, total=False):
     scope: StudyScope
 
 
+#: The compiled scoping graph, fully parameterized
+#: (``[state, context, input, output]``). Spelled out so ``invoke`` input-checks
+#: against `ScopingState` instead of degrading to a bare-generic
+#: ``CompiledStateGraph[Any, Any, Any, Any]``. We pass no context/input/output
+#: schema, so context is ``None`` and input/output mirror the state.
+ScopingGraph = CompiledStateGraph[ScopingState, None, ScopingState, ScopingState]
+
+
 #: (query, parent_id) -> child topic nodes. `query` is the root topic at the top
 #: level, otherwise the label of the node being deepened.
 ExpandFn = Callable[[str, str | None], list[TopicNode]]
@@ -121,7 +129,7 @@ def build_scoping_graph(
     *,
     expand_fn: ExpandFn | None = None,
     fetch_fn: FetchFn | None = None,
-) -> CompiledStateGraph:
+) -> ScopingGraph:
     """Compile the scoping graph with an in-memory checkpointer.
 
     `expand_fn`/`fetch_fn` default to the real (search + LLM + doc-fetch)

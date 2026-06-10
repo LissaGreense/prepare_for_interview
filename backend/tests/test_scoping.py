@@ -9,19 +9,19 @@ from typing import Any
 
 import pytest
 from langchain_core.runnables import RunnableConfig
-from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
 
 from app.generation.scoping import (
     MAX_DEEPEN_LEVELS,
     ResumePayload,
+    ScopingGraph,
     ScopingState,
     build_scoping_graph,
 )
 from tests.fakes import fake_expand, fake_fetch
 
 
-def _graph() -> CompiledStateGraph:
+def _graph() -> ScopingGraph:
     return build_scoping_graph(expand_fn=fake_expand, fetch_fn=fake_fetch)
 
 
@@ -32,9 +32,7 @@ def _interrupt_payload(result: dict[str, Any]) -> dict[str, Any]:
     return interrupts[0].value
 
 
-def _start(
-    graph: CompiledStateGraph, root_topic: str, thread_id: str
-) -> dict[str, Any]:
+def _start(graph: ScopingGraph, root_topic: str, thread_id: str) -> dict[str, Any]:
     """Begin a scoping run; returns the first paused state (an interrupt)."""
     config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
     initial: ScopingState = {
@@ -50,7 +48,7 @@ def _start(
 
 
 def _resume(
-    graph: CompiledStateGraph,
+    graph: ScopingGraph,
     thread_id: str,
     selected: list[str],
     deeper_into: str | None,
