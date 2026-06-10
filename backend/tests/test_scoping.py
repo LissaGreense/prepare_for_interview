@@ -14,6 +14,7 @@ from langgraph.types import Command
 
 from app.generation.scoping import (
     MAX_DEEPEN_LEVELS,
+    ResumePayload,
     ScopingState,
     build_scoping_graph,
 )
@@ -56,9 +57,8 @@ def _resume(
 ) -> dict[str, Any]:
     """Resume a paused run on `thread_id` with the human's pick."""
     config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
-    cmd: Command[Any] = Command(
-        resume={"selected": selected, "deeper_into": deeper_into}
-    )
+    payload: ResumePayload = {"selected": selected, "deeper_into": deeper_into}
+    cmd: Command[Any] = Command(resume=payload)
     return graph.invoke(cmd, config)
 
 

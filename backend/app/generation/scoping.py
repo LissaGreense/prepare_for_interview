@@ -58,6 +58,17 @@ class FetchPayload(TypedDict):
     label: str
 
 
+class ResumePayload(TypedDict):
+    """The human's answer to a pick interrupt, sent back via ``Command(resume=…)``.
+
+    This is the wire contract between the service/UI and the `pick` node — what
+    ``interrupt()`` returns when the graph resumes.
+    """
+
+    selected: list[str]
+    deeper_into: str | None
+
+
 class ScopeTopic(BaseModel):
     """A selected leaf topic plus the documentation gathered for it."""
 
@@ -148,7 +159,7 @@ def build_scoping_graph(
         depth = state.get("depth", 0)
         frontier = [n for n in state.get("tree", []) if n["parent_id"] == cursor_id]
 
-        answer = interrupt(
+        answer: ResumePayload = interrupt(
             {
                 "kind": "pick",
                 "question": "Select the parts to cover. Optionally drill into one.",

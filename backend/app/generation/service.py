@@ -16,7 +16,7 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
 from pydantic import BaseModel
 
-from .scoping import ScopingState, StudyScope, build_scoping_graph
+from .scoping import ResumePayload, ScopingState, StudyScope, build_scoping_graph
 
 # Lazily-built singleton so the graph (and its checkpointer) persist across
 # requests. Tests swap this for a fake-injected graph.
@@ -108,7 +108,6 @@ def resume(thread_id: str, selected: list[str], deeper_into: str | None) -> Scop
     # both couple us to that node's internals and mask genuine errors.
     if not graph.get_state(config).next:
         raise UnknownThreadError(thread_id)
-    cmd: Command[Any] = Command(
-        resume={"selected": selected, "deeper_into": deeper_into}
-    )
+    payload: ResumePayload = {"selected": selected, "deeper_into": deeper_into}
+    cmd: Command[Any] = Command(resume=payload)
     return _interpret(thread_id, graph.invoke(cmd, config))
