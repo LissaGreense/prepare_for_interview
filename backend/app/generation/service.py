@@ -98,11 +98,13 @@ def start(root_topic: str) -> ScopeState:
 def resume(thread_id: str, selected: list[str], deeper_into: str | None) -> ScopeState:
     """Resume a paused session with the user's pick. Returns the next pick or scope."""
     config = {"configurable": {"thread_id": thread_id}}
+    graph = _graph()
+    # Reject unknown threads up front: an unresumed thread has no persisted
+    # checkpoint (no `next` nodes). Relying on a downstream node crashing would
+    # both couple us to that node's internals and mask genuine errors.
+    if not graph.get_state(config).next:
+        raise UnknownThreadError(thread_id)
     cmd: Command[Any] = Command(
         resume={"selected": selected, "deeper_into": deeper_into}
     )
-    try:
-        result = _graph().invoke(cmd, config)
-    except KeyError as exc:  # no persisted run for this thread_id
-        raise UnknownThreadError(thread_id) from exc
-    return _interpret(thread_id, result)
+    return _interpret(thread_id, graph.invoke(cmd, config))

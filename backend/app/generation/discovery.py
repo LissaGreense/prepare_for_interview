@@ -7,6 +7,7 @@ chat model for structured extraction, and `WebBaseLoader` to pull doc text.
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 import time
@@ -19,6 +20,8 @@ from pydantic import BaseModel, Field
 
 from .llm import structured
 from .scoping import FetchedDoc, TopicNode
+
+_log = logging.getLogger(__name__)
 
 # WebBaseLoader nags if this is unset; identify our requests politely.
 os.environ.setdefault("USER_AGENT", "prepare-for-interview-quizgen")
@@ -57,8 +60,11 @@ def _search(query: str, *, retries: int = 3) -> list[dict[str, Any]]:
     for attempt in range(retries):
         try:
             return cast(list[dict[str, Any]], _SEARCH.invoke(query))
-        except Exception:
+        except Exception as exc:
             if attempt == retries - 1:
+                _log.warning(
+                    "search gave up for %r after %d tries: %s", query, retries, exc
+                )
                 return []
             time.sleep(1.5 * (attempt + 1))
     return []
@@ -102,6 +108,8 @@ def default_fetch(topic_id: str, label: str) -> FetchedDoc:
                 chunk_size=1000, chunk_overlap=200
             ).split_documents(docs)
             text = "\n\n".join(c.page_content for c in chunks[:_MAX_DOC_CHUNKS])
-        except Exception:
-            text = ""  # a flaky page shouldn't sink the whole scope
+        except Exception as exc:
+            # a flaky page shouldn't sink the whole scope — degrade to empty
+            _log.warning("doc fetch failed for %r (%s): %s", label, urls, exc)
+            text = ""
     return FetchedDoc(topic_id=topic_id, text=text, sources=urls)

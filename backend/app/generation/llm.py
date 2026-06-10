@@ -21,7 +21,7 @@ from typing import Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.runnables import Runnable
-from pydantic import SecretStr
+from pydantic import BaseModel, SecretStr
 
 
 def _provider() -> str:
@@ -60,7 +60,9 @@ def get_chat_model(*, temperature: float = 0.7) -> BaseChatModel:
     )
 
 
-def structured(schema: type, *, temperature: float = 0.7) -> Runnable[Any, Any]:
+def structured(
+    schema: type[BaseModel], *, temperature: float = 0.7
+) -> Runnable[Any, Any]:
     """Return a runnable that emits an instance of `schema` (a Pydantic model).
 
     Picks the structured-output method per provider: grammar-constrained
