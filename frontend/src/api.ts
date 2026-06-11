@@ -1,4 +1,4 @@
-import type { Question, Topic } from './types'
+import type { Question, ScopeState, Topic } from './types'
 
 /** Backend base URL (FastAPI dev server). */
 const API_BASE = 'http://localhost:8000'
@@ -30,4 +30,48 @@ export async function fetchQuiz(topic: string): Promise<Question[]> {
     throw new Error(`Failed to load quiz for "${topic}": ${res.status}`)
   }
   return (await res.json()) as Question[]
+}
+
+/**
+ * Begin scoping a broad topic. Returns the first pick prompt the user answers.
+ *
+ * @param rootTopic - The broad topic to narrow, e.g. "web development".
+ * @returns The scoping state (awaiting the first pick).
+ * @throws If the request fails or the backend returns a non-2xx status.
+ */
+export async function startScope(rootTopic: string): Promise<ScopeState> {
+  const res = await fetch(`${API_BASE}/scope/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ root_topic: rootTopic }),
+  })
+  if (!res.ok) {
+    throw new Error(`Failed to start scoping: ${res.status}`)
+  }
+  return (await res.json()) as ScopeState
+}
+
+/**
+ * Resume a scoping session with the user's pick.
+ *
+ * @param threadId - The session id from {@link startScope}.
+ * @param selected - Ids of the options the user kept at this frontier.
+ * @param deeperInto - Id to drill deeper into, or `null` to finish this branch.
+ * @returns The next pick prompt, or the final assembled scope.
+ * @throws If the session is unknown (404) or the request otherwise fails.
+ */
+export async function resumeScope(
+  threadId: string,
+  selected: string[],
+  deeperInto: string | null,
+): Promise<ScopeState> {
+  const res = await fetch(`${API_BASE}/scope/${encodeURIComponent(threadId)}/resume`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ selected, deeper_into: deeperInto }),
+  })
+  if (!res.ok) {
+    throw new Error(`Failed to resume scoping: ${res.status}`)
+  }
+  return (await res.json()) as ScopeState
 }

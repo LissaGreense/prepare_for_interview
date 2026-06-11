@@ -2,8 +2,10 @@
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from .corpus import TopicNotFoundError, list_topics, load_quiz, select_questions
+from .generation import service
 from .models import Question, Topic
 
 app = FastAPI(title="Interview Prep Quiz")
@@ -12,7 +14,7 @@ app = FastAPI(title="Interview Prep Quiz")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -41,3 +43,36 @@ def quiz(topic: str, count: int | None = None) -> list[Question]:
     except TopicNotFoundError:
         raise HTTPException(status_code=404, detail=f"Unknown topic: {topic}") from None
     return select_questions(questions, count)
+
+
+# --- AI question generator, Phase 1: interactive topic scoping ---------------
+
+
+class StartScopeRequest(BaseModel):
+    """Body for `POST /scope/start`."""
+
+    root_topic: str
+
+
+class ResumeScopeRequest(BaseModel):
+    """Body for `POST /scope/{thread_id}/resume`."""
+
+    selected: list[str] = []
+    deeper_into: str | None = None
+
+
+@app.post("/scope/start")
+def scope_start(req: StartScopeRequest) -> service.ScopeState:
+    """Begin scoping a broad topic; returns the first pick prompt."""
+    return service.start(req.root_topic)
+
+
+@app.post("/scope/{thread_id}/resume")
+def scope_resume(thread_id: str, req: ResumeScopeRequest) -> service.ScopeState:
+    """Resume a scoping session with the user's pick; returns next pick or scope."""
+    try:
+        return service.resume(thread_id, req.selected, req.deeper_into)
+    except service.UnknownThreadError:
+        raise HTTPException(
+            status_code=404, detail=f"Unknown scope session: {thread_id}"
+        ) from None

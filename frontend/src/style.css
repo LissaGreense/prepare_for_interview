@@ -13,20 +13,29 @@
   --text-muted: #a3acbd; /* secondary */
   --text-faint: #6b7484; /* labels, counts */
 
+  /* Alpha steps for soft fills / hairline borders. Derived variants below mix
+     each base hue against transparent by these amounts — one source of truth,
+     no parallel rgba palette to drift. --alpha-line at 45% keeps state borders
+     ≥3:1 on their surface (WCAG 1.4.11). */
+  --alpha-soft: 10%;
+  --alpha-line: 45%;
+
   /* ONE vivid accent — used sparingly */
   --accent: #5eead4; /* teal/aqua */
-  --accent-strong: #2dd4bf;
+  --accent-strong: #2dd4bf; /* anchor: more saturated, not a darken of --accent */
   --accent-ink: #04221d; /* text on accent fill */
-  --accent-soft: rgba(94, 234, 212, 0.1);
-  --accent-line: rgba(94, 234, 212, 0.38);
+  --accent-soft: color-mix(in srgb, var(--accent) var(--alpha-soft), transparent);
+  --accent-line: color-mix(in srgb, var(--accent) var(--alpha-line), transparent);
 
   /* Semantic states */
   --good: #56d6a0;
-  --good-soft: rgba(86, 214, 160, 0.1);
-  --good-line: rgba(86, 214, 160, 0.45);
+  --good-ink: #04150f; /* text on good fill */
+  --good-soft: color-mix(in srgb, var(--good) var(--alpha-soft), transparent);
+  --good-line: color-mix(in srgb, var(--good) var(--alpha-line), transparent);
   --bad: #f4748b;
-  --bad-soft: rgba(244, 116, 139, 0.1);
-  --bad-line: rgba(244, 116, 139, 0.42);
+  --bad-ink: #260910; /* text on bad fill */
+  --bad-soft: color-mix(in srgb, var(--bad) var(--alpha-soft), transparent);
+  --bad-line: color-mix(in srgb, var(--bad) var(--alpha-line), transparent);
 
   /* ---- Spacing scale ---- */
   --s-1: 4px;
@@ -42,6 +51,7 @@
   --r-md: 12px;
   --r-lg: 16px;
   --r-xl: 22px;
+  --r-round: 999px; /* pills, tracks, circular markers */
 
   /* ---- Type scale ---- */
   --t-xs: 12px;
@@ -57,6 +67,11 @@
     ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.55);
+
+  /* Visible focus indicator (WCAG 2.4.11): dark separator gap + opaque accent
+     ring, so it reads against both dark surfaces and bright accent fills.
+     Replaces the old 10%-alpha glow that sat at ~1.2:1. */
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
 
   color-scheme: dark;
 }
@@ -84,7 +99,11 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(900px 480px at 50% -160px, rgba(94, 234, 212, 0.06), transparent 70%);
+  background: radial-gradient(
+    900px 480px at 50% -160px,
+    color-mix(in srgb, var(--accent) 6%, transparent),
+    transparent 70%
+  );
   z-index: 0;
 }
 
@@ -171,7 +190,7 @@ input[type='number']:hover {
 input[type='number']:focus-visible {
   outline: none;
   border-color: var(--accent-line);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: var(--focus-ring);
 }
 
 /* ---- Topic cards ---- */
@@ -208,7 +227,7 @@ input[type='number']:focus-visible {
 .topic-card:focus-visible {
   outline: none;
   border-color: var(--accent-line);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: var(--focus-ring);
 }
 .topic-card:active {
   transform: translateY(1px);
@@ -237,7 +256,7 @@ input[type='number']:focus-visible {
   width: 20px;
   height: 20px;
   border: 1.5px solid var(--line-strong);
-  border-radius: 999px;
+  border-radius: var(--r-round);
   display: grid;
   place-items: center;
   color: transparent;
@@ -304,9 +323,7 @@ input[type='number']:focus-visible {
 }
 .btn:focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 3px var(--accent-soft),
-    0 0 0 1px var(--accent-line);
+  box-shadow: var(--focus-ring);
 }
 
 .btn-primary {
@@ -385,7 +402,7 @@ input[type='number']:focus-visible {
 .quiz-quit:focus-visible {
   outline: none;
   color: var(--text);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: var(--focus-ring);
 }
 .progress-text {
   font-family: var(--font-mono);
@@ -401,13 +418,13 @@ input[type='number']:focus-visible {
   width: 160px;
   height: 6px;
   background: var(--surface-2);
-  border-radius: 999px;
+  border-radius: var(--r-round);
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--accent-strong), var(--accent));
-  border-radius: 999px;
+  border-radius: var(--r-round);
   transition: width 0.25s ease;
 }
 
@@ -454,7 +471,7 @@ input[type='number']:focus-visible {
 .option:focus-visible {
   outline: none;
   border-color: var(--accent-line);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: var(--focus-ring);
 }
 .option:disabled {
   cursor: default;
@@ -464,13 +481,13 @@ input[type='number']:focus-visible {
   flex: none;
   width: 22px;
   height: 22px;
-  border-radius: 999px;
+  border-radius: var(--r-round);
   border: 1.5px solid var(--line-strong);
   display: grid;
   place-items: center;
   color: var(--text-faint);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--t-xs);
 }
 .option .label {
   flex: 1;
@@ -495,7 +512,7 @@ input[type='number']:focus-visible {
 .option.correct .marker {
   background: var(--good);
   border-color: var(--good);
-  color: #04150f;
+  color: var(--good-ink);
 }
 .option.correct .tag {
   color: var(--good);
@@ -508,7 +525,7 @@ input[type='number']:focus-visible {
 .option.incorrect .marker {
   background: var(--bad);
   border-color: var(--bad);
-  color: #260910;
+  color: var(--bad-ink);
 }
 .option.incorrect .tag {
   color: var(--bad);
@@ -671,5 +688,234 @@ input[type='number']:focus-visible {
   }
   .answer-line .key {
     width: auto;
+  }
+}
+
+/* ---- Top mode nav ---- */
+.app-nav {
+  display: flex;
+  gap: var(--s-2);
+  margin: 0 auto var(--s-5);
+  padding: var(--s-1);
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  width: fit-content;
+}
+.app-nav__tab {
+  font: inherit;
+  font-weight: 600;
+  font-size: var(--t-sm);
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 8px 18px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.app-nav__tab:hover {
+  color: var(--text);
+}
+.app-nav__tab.active {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+/* ---- Scope builder ---- */
+.scope-input {
+  font: inherit;
+  width: 100%;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  margin-bottom: var(--s-4);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.scope-input::placeholder {
+  color: var(--text-faint);
+}
+.scope-input:focus-visible {
+  outline: none;
+  border-color: var(--accent-line);
+  box-shadow: var(--focus-ring);
+}
+
+.scope-trail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-3);
+  font-family: var(--font-mono);
+  font-size: var(--t-xs);
+  color: var(--text-faint);
+}
+.scope-trail span::after {
+  content: '·';
+  margin-left: var(--s-2);
+  color: var(--line-strong);
+}
+.scope-trail span:last-child::after {
+  content: '';
+}
+
+.scope-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-bottom: var(--s-5);
+}
+.scope-option-row {
+  display: flex;
+  gap: var(--s-2);
+}
+.scope-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.scope-option:hover {
+  background: var(--surface-3);
+}
+.scope-option.kept {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+.scope-option__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+  color: transparent;
+  font-size: var(--t-xs);
+  flex-shrink: 0;
+}
+.scope-option.kept .scope-option__check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.scope-option__label {
+  flex: 1;
+  font-weight: 550;
+}
+.scope-option__kind {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.scope-drill {
+  font: inherit;
+  font-size: var(--t-xs);
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 0 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.scope-drill:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+.scope-drill.active {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+.scope-actions {
+  display: flex;
+  gap: var(--s-3);
+}
+
+.scope-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-bottom: var(--s-5);
+}
+.scope-doc {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: var(--s-3) var(--s-4);
+}
+.scope-doc summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  cursor: pointer;
+  font-weight: 550;
+}
+.scope-doc__meta {
+  font-family: var(--font-mono);
+  font-size: var(--t-xs);
+  color: var(--text-faint);
+}
+.scope-doc__sources {
+  margin: var(--s-3) 0 0;
+  padding-left: var(--s-4);
+  font-size: var(--t-xs);
+}
+.scope-doc__sources a {
+  color: var(--accent);
+  word-break: break-all;
+}
+.scope-doc__text {
+  margin: var(--s-3) 0 0;
+  padding: var(--s-3);
+  background: var(--bg);
+  border-radius: var(--r-sm);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--t-xs);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  max-height: 240px;
+  overflow: auto;
+}
+
+/* ---- Reduced motion ---- */
+/* Honor the OS "reduce motion" setting (WCAG 2.3.3): collapse every transition,
+   animation, and the progress-fill width tween to near-instant. The single
+   sanctioned !important — a global accessibility kill-switch. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
