@@ -36,7 +36,12 @@ export const useScopeStore = defineStore('scope', () => {
   const isBusy = computed(() => loading.value)
 
   /** Apply a scoping response, switching to the right phase. */
-  function apply(state: { thread_id: string; status: string; pick: PickPrompt | null; scope: StudyScope | null }): void {
+  function apply(state: {
+    thread_id: string
+    status: string
+    pick: PickPrompt | null
+    scope: StudyScope | null
+  }): void {
     threadId.value = state.thread_id
     if (state.status === 'done') {
       scope.value = state.scope

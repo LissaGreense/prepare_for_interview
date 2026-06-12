@@ -63,8 +63,8 @@ async function onContinue(): Promise<void> {
     <template v-if="store.phase === 'intro'">
       <h1>Scope a topic</h1>
       <p class="subhead">
-        Name a broad area. We'll research it, you pick what to cover, and we'll gather docs
-        to generate questions from.
+        Name a broad area. We'll research it, you pick what to cover, and we'll gather docs to
+        generate questions from.
       </p>
       <form @submit.prevent="onBegin">
         <input
@@ -75,10 +75,7 @@ async function onContinue(): Promise<void> {
           :disabled="store.loading"
           aria-label="Broad topic"
         />
-        <button
-          class="btn btn-primary btn-block"
-          :disabled="!topic.trim() || store.loading"
-        >
+        <button class="btn btn-primary btn-block" :disabled="!topic.trim() || store.loading">
           {{ store.loading ? 'Researching…' : 'Start' }}
         </button>
       </form>
@@ -126,9 +123,7 @@ async function onContinue(): Promise<void> {
         <button class="btn btn-primary" :disabled="!canSubmit" @click="onContinue">
           {{ store.loading ? 'Working…' : continueLabel }}
         </button>
-        <button class="btn btn-ghost" :disabled="store.loading" @click="store.reset()">
-          Quit
-        </button>
+        <button class="btn btn-ghost" :disabled="store.loading" @click="store.reset()">Quit</button>
       </div>
     </template>
 
@@ -136,7 +131,9 @@ async function onContinue(): Promise<void> {
     <template v-else-if="store.phase === 'done' && store.scope">
       <h1>Scope ready</h1>
       <p class="subhead">
-        {{ store.scope.topics.length }} topic{{ store.scope.topics.length === 1 ? '' : 's' }}
+        {{ store.scope.topics.length }} topic{{
+          store.scope.topics.length === 1 ? '' : 's'
+        }}
         gathered for <strong>{{ store.scope.root_topic }}</strong
         >. This feeds question generation next.
       </p>
@@ -156,15 +153,13 @@ async function onContinue(): Promise<void> {
               <a :href="s" target="_blank" rel="noopener noreferrer">{{ s }}</a>
             </li>
           </ul>
-          <pre class="scope-doc__text">{{ t.doc_text.slice(0, 800) }}{{
-            t.doc_text.length > 800 ? '…' : ''
-          }}</pre>
+          <pre class="scope-doc__text"
+            >{{ t.doc_text.slice(0, 800) }}{{ t.doc_text.length > 800 ? '…' : '' }}</pre
+          >
         </details>
       </div>
 
-      <button class="btn btn-primary btn-block" @click="store.reset()">
-        Scope another topic
-      </button>
+      <button class="btn btn-primary btn-block" @click="store.reset()">Scope another topic</button>
     </template>
   </section>
 </template>

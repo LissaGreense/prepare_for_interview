@@ -5,7 +5,7 @@ These exercise the real LangGraph machinery — checkpointer, ``interrupt()``,
 `fetch_docs` — with **fake** discovery functions. No network, no LLM.
 """
 
-from typing import Any
+from typing import Any, cast
 
 import pytest
 from langchain_core.runnables import RunnableConfig
@@ -29,7 +29,7 @@ def _interrupt_payload(result: dict[str, Any]) -> dict[str, Any]:
     """Pull the single pending interrupt's payload out of an invoke result."""
     interrupts = result["__interrupt__"]
     assert len(interrupts) == 1
-    return interrupts[0].value
+    return cast(dict[str, Any], interrupts[0].value)
 
 
 def _start(graph: ScopingGraph, root_topic: str, thread_id: str) -> dict[str, Any]:

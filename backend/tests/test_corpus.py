@@ -21,7 +21,7 @@ VALID = {
 }
 
 
-def _write(path: Path, payload) -> None:
+def _write(path: Path, payload: str | dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(payload if isinstance(payload, str) else json.dumps(payload))
 

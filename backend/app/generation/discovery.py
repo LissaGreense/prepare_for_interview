@@ -69,7 +69,7 @@ def _search(query: str, *, retries: int = 3) -> list[SearchHit]:
     for attempt in range(retries):
         try:
             return cast(list[SearchHit], _SEARCH.invoke(query))
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - search is best-effort; never sink the scope
             if attempt == retries - 1:
                 _log.warning(
                     "search gave up for %r after %d tries: %s", query, retries, exc
@@ -117,8 +117,7 @@ def default_fetch(topic_id: str, label: str) -> FetchedDoc:
                 chunk_size=1000, chunk_overlap=200
             ).split_documents(docs)
             text = "\n\n".join(c.page_content for c in chunks[:_MAX_DOC_CHUNKS])
-        except Exception as exc:
-            # a flaky page shouldn't sink the whole scope — degrade to empty
+        except Exception as exc:  # noqa: BLE001 - a flaky page shouldn't sink the scope
             _log.warning("doc fetch failed for %r (%s): %s", label, urls, exc)
             text = ""
     return FetchedDoc(topic_id=topic_id, text=text, sources=urls)
