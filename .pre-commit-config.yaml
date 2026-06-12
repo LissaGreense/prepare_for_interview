@@ -1,0 +1,40 @@
+# Commit-time quality gates. Mirrors the fast CI checks (lint + format) so
+# breakage is caught before it reaches a PR. Type-checking (mypy, vue-tsc) and
+# the test suites stay CI-only — too slow for every commit.
+#
+# Local hooks deliberately call the project's own tooling (backend/.venv, the
+# frontend npm scripts) rather than pinned mirrors, so the hook and CI run the
+# exact same versions and config. Requires `backend/.venv` and
+# `frontend/node_modules` to be installed.
+#
+# Enable once with:  pre-commit install
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check (backend)
+        entry: backend/.venv/bin/ruff check
+        language: system
+        types: [python]
+        files: ^backend/
+
+      - id: ruff-format
+        name: ruff format (backend)
+        entry: backend/.venv/bin/ruff format --check
+        language: system
+        types: [python]
+        files: ^backend/
+
+      - id: prettier
+        name: prettier (frontend)
+        entry: bash -c 'cd frontend && npm run --silent format:check'
+        language: system
+        pass_filenames: false
+        files: ^frontend/
+
+      - id: eslint
+        name: eslint (frontend)
+        entry: bash -c 'cd frontend && npm run --silent lint:check'
+        language: system
+        pass_filenames: false
+        files: ^frontend/

@@ -17,14 +17,12 @@ Env vars:
 from __future__ import annotations
 
 import os
-from typing import TypeVar, cast
+from typing import cast
 
 from langchain_core.language_models import LanguageModelInput
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.runnables import Runnable
 from pydantic import BaseModel, SecretStr
-
-_SchemaT = TypeVar("_SchemaT", bound=BaseModel)
 
 
 def _provider() -> str:
@@ -63,9 +61,9 @@ def get_chat_model(*, temperature: float = 0.7) -> BaseChatModel:
     )
 
 
-def structured(
-    schema: type[_SchemaT], *, temperature: float = 0.7
-) -> Runnable[LanguageModelInput, _SchemaT]:
+def structured[SchemaT: BaseModel](
+    schema: type[SchemaT], *, temperature: float = 0.7
+) -> Runnable[LanguageModelInput, SchemaT]:
     """Return a runnable that emits an instance of `schema` (a Pydantic model).
 
     Generic in `schema`, so ``structured(Foo).invoke(...)`` is statically typed
@@ -81,4 +79,4 @@ def structured(
     runnable = get_chat_model(temperature=temperature).with_structured_output(
         schema, method=method
     )
-    return cast(Runnable[LanguageModelInput, _SchemaT], runnable)
+    return cast(Runnable[LanguageModelInput, SchemaT], runnable)

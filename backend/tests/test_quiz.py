@@ -12,6 +12,7 @@ import json
 import random
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app import main
@@ -112,7 +113,9 @@ def test_order_is_randomized_across_seeds() -> None:
     assert len(orderings) > 1
 
 
-def test_http_count_caps_result(tmp_path: Path, monkeypatch) -> None:
+def test_http_count_caps_result(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """The /quiz route honors `count` end-to-end, against a fixture corpus.
 
     The real `questions/` dir is gitignored local content, so this builds its

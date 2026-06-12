@@ -2,7 +2,7 @@
 name = "interview-quiz-backend"
 version = "0.1.0"
 description = "Backend for the local interview-prep quiz app"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "fastapi",
     "uvicorn",
@@ -32,22 +32,25 @@ gen = [
 include = ["app*"]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py314"
 line-length = 88
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM"]
+# S = bandit security, RUF = ruff-specific, BLE = blind-except.
+select = ["E", "F", "I", "UP", "B", "SIM", "S", "RUF", "BLE"]
+
+[tool.ruff.lint.per-file-ignores]
+# `assert` is the idiom in pytest; S101 only matters in shipped code.
+"tests/**" = ["S101"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.14"
 plugins = ["pydantic.mypy"]
-check_untyped_defs = true
-warn_unused_ignores = true
-warn_redundant_casts = true
-# Bare generics (e.g. a un-parameterized CompiledStateGraph) silently expand to
-# [Any, ...]; forbid them so that hidden Any can't creep back in.
-disallow_any_generics = true
+# Full strict mode. Notably this subsumes disallow_any_generics: bare generics
+# (e.g. an un-parameterized CompiledStateGraph) silently expand to [Any, ...];
+# forbidding them keeps hidden Any from creeping back in.
+strict = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q --strict-config"

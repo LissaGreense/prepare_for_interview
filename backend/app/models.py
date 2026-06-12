@@ -18,7 +18,7 @@ class Question(BaseModel):
     explanation: str | None = None
 
     @model_validator(mode="after")
-    def _correct_indexes_an_option(self) -> "Question":
+    def _correct_indexes_an_option(self) -> Question:
         """`correct` must be a valid zero-based index into `options`."""
         if not 0 <= self.correct < len(self.options):
             raise ValueError(
