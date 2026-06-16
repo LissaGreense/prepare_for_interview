@@ -1,4 +1,4 @@
-import type { Question, ScopeState, Topic } from './types'
+import type { GenerationResult, Question, ScopeState, Topic } from './types'
 
 /** Backend base URL (FastAPI dev server). */
 const API_BASE = 'http://localhost:8000'
@@ -74,4 +74,21 @@ export async function resumeScope(
     throw new Error(`Failed to resume scoping: ${res.status}`)
   }
   return (await res.json()) as ScopeState
+}
+
+/**
+ * Generate and persist questions from a finished scope.
+ *
+ * @param threadId - The session id of a scope that reached `done`.
+ * @returns Per-topic written counts.
+ * @throws If the scope is unknown (404), not yet finished (409), or the request fails.
+ */
+export async function generateScope(threadId: string): Promise<GenerationResult> {
+  const res = await fetch(`${API_BASE}/scope/${encodeURIComponent(threadId)}/generate`, {
+    method: 'POST',
+  })
+  if (!res.ok) {
+    throw new Error(`Failed to generate questions: ${res.status}`)
+  }
+  return (await res.json()) as GenerationResult
 }

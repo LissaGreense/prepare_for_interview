@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { resumeScope, startScope } from '../api'
-import type { PickPrompt, StudyScope } from '../types'
+import { generateScope, resumeScope, startScope } from '../api'
+import type { GenerationResult, PickPrompt, StudyScope } from '../types'
 
 /** Which screen the scope builder is showing. */
-export type ScopePhase = 'intro' | 'picking' | 'done'
+export type ScopePhase = 'intro' | 'picking' | 'done' | 'generated'
 
 /** One resolved step in the scoping trail, kept for the breadcrumb. */
 export interface ScopeStep {
@@ -28,6 +28,8 @@ export const useScopeStore = defineStore('scope', () => {
   const prompt = ref<PickPrompt | null>(null)
   /** The assembled scope, set once the flow finishes. */
   const scope = ref<StudyScope | null>(null)
+  /** Generation summary, set once questions are written. */
+  const generation = ref<GenerationResult | null>(null)
   /** Resolved frontiers so far, for the trail/breadcrumb. */
   const trail = ref<ScopeStep[]>([])
   const loading = ref(false)
@@ -98,6 +100,24 @@ export const useScopeStore = defineStore('scope', () => {
     }
   }
 
+  /**
+   * Generate questions from the finished scope and persist them to disk.
+   * Only valid once the flow has reached the `done` phase.
+   */
+  async function generate(): Promise<void> {
+    if (!threadId.value || phase.value !== 'done') return
+    loading.value = true
+    error.value = null
+    try {
+      generation.value = await generateScope(threadId.value)
+      phase.value = 'generated'
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to generate questions'
+    } finally {
+      loading.value = false
+    }
+  }
+
   /** Clear all scoping state and return to the intro. */
   function reset(): void {
     phase.value = 'intro'
@@ -105,6 +125,7 @@ export const useScopeStore = defineStore('scope', () => {
     threadId.value = null
     prompt.value = null
     scope.value = null
+    generation.value = null
     trail.value = []
     error.value = null
   }
@@ -115,12 +136,14 @@ export const useScopeStore = defineStore('scope', () => {
     threadId,
     prompt,
     scope,
+    generation,
     trail,
     loading,
     error,
     isBusy,
     begin,
     submitPick,
+    generate,
     reset,
   }
 })

@@ -67,3 +67,22 @@ export interface ScopeState {
   pick: PickPrompt | null
   scope: StudyScope | null
 }
+
+// --- AI question generator, Phase 2: generation ---
+
+/** How many questions were written for one scoped topic. */
+export interface TopicGeneration {
+  topic_id: string
+  label: string
+  /** Count of valid questions written to disk for this topic. */
+  written: number
+}
+
+/** Summary of a generation run, from `POST /scope/{id}/generate`. */
+export interface GenerationResult {
+  thread_id: string
+  root_topic: string
+  topics: TopicGeneration[]
+  /** Total questions written across all topics. */
+  total: number
+}
