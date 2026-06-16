@@ -863,6 +863,17 @@ input[type='number']:focus-visible {
   gap: var(--s-2);
   margin-bottom: var(--s-5);
 }
+.scope-gen-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: var(--s-3) var(--s-4);
+  font-weight: 550;
+}
 .scope-doc {
   background: var(--surface-2);
   border: 1px solid var(--line);

@@ -65,6 +65,27 @@ class UnknownThreadError(Exception):
     """Raised when resuming a `thread_id` with no persisted run."""
 
 
+class ScopeNotReadyError(Exception):
+    """Raised when generation is requested before a session reached its scope."""
+
+
+class TopicGeneration(BaseModel):
+    """How many questions were written for one scoped topic."""
+
+    topic_id: str
+    label: str
+    written: int
+
+
+class GenerationResult(BaseModel):
+    """Summary of a generation run across all topics in a scope."""
+
+    thread_id: str
+    root_topic: str
+    topics: list[TopicGeneration]
+    total: int
+
+
 def _interpret(thread_id: str, result: dict[str, Any]) -> ScopeState:
     """Map a graph invoke result to the API response."""
     if "__interrupt__" in result:
@@ -116,3 +137,41 @@ def resume(thread_id: str, selected: list[str], deeper_into: str | None) -> Scop
     payload: ResumePayload = {"selected": selected, "deeper_into": deeper_into}
     cmd: Command[Any] = Command(resume=payload)
     return _interpret(thread_id, graph.invoke(cmd, config))
+
+
+def generate(thread_id: str, *, count: int = 5) -> GenerationResult:
+    """Generate and persist questions for a finished scoping session.
+
+    Reads the `StudyScope` the graph stored under `thread_id`, generates questions
+    per topic (grounded in each topic's fetched docs), writes them to the corpus, and
+    returns per-topic counts.
+
+    Raises:
+        UnknownThreadError: No persisted run for this `thread_id`.
+        ScopeNotReadyError: The session exists but hasn't reached its scope yet.
+    """
+    from .generation import generate_for_topic
+    from .writer import write_questions
+
+    config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
+    state = _graph().get_state(config)
+    if not state.values:
+        raise UnknownThreadError(thread_id)
+    raw_scope = state.values.get("scope")
+    if raw_scope is None:
+        raise ScopeNotReadyError(thread_id)
+
+    scope = StudyScope.model_validate(raw_scope)
+    results: list[TopicGeneration] = []
+    for topic in scope.topics:
+        drafts = generate_for_topic(topic, count=count)
+        written = write_questions(topic.label, drafts, title=topic.label)
+        results.append(
+            TopicGeneration(topic_id=topic.id, label=topic.label, written=len(written))
+        )
+    return GenerationResult(
+        thread_id=thread_id,
+        root_topic=scope.root_topic,
+        topics=results,
+        total=sum(r.written for r in results),
+    )

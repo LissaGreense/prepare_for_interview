@@ -76,3 +76,21 @@ def scope_resume(thread_id: str, req: ResumeScopeRequest) -> service.ScopeState:
         raise HTTPException(
             status_code=404, detail=f"Unknown scope session: {thread_id}"
         ) from None
+
+
+# --- AI question generator, Phase 2: generation ------------------------------
+
+
+@app.post("/scope/{thread_id}/generate")
+def scope_generate(thread_id: str) -> service.GenerationResult:
+    """Generate and write questions from a finished scope; returns per-topic counts."""
+    try:
+        return service.generate(thread_id)
+    except service.UnknownThreadError:
+        raise HTTPException(
+            status_code=404, detail=f"Unknown scope session: {thread_id}"
+        ) from None
+    except service.ScopeNotReadyError:
+        raise HTTPException(
+            status_code=409, detail="Scope is not finished yet; finish picking first."
+        ) from None

@@ -159,6 +159,39 @@ async function onContinue(): Promise<void> {
         </details>
       </div>
 
+      <p v-if="store.error" class="error" role="alert">{{ store.error }}</p>
+
+      <div class="scope-actions">
+        <button
+          class="btn btn-primary"
+          :disabled="store.loading || !store.scope.topics.length"
+          @click="store.generate()"
+        >
+          {{ store.loading ? 'Generating…' : 'Generate questions' }}
+        </button>
+        <button class="btn btn-ghost" :disabled="store.loading" @click="store.reset()">
+          Scope another topic
+        </button>
+      </div>
+    </template>
+
+    <!-- Generated: questions written to disk -->
+    <template v-else-if="store.phase === 'generated' && store.generation">
+      <h1>Questions generated</h1>
+      <p class="subhead">
+        Wrote <strong>{{ store.generation.total }}</strong> question{{
+          store.generation.total === 1 ? '' : 's'
+        }}
+        for <strong>{{ store.generation.root_topic }}</strong> to your question bank.
+      </p>
+
+      <ul class="scope-result">
+        <li v-for="t in store.generation.topics" :key="t.topic_id" class="scope-gen-row">
+          <span class="scope-doc__label">{{ t.label }}</span>
+          <span class="scope-doc__meta">{{ t.written }} written</span>
+        </li>
+      </ul>
+
       <button class="btn btn-primary btn-block" @click="store.reset()">Scope another topic</button>
     </template>
   </section>

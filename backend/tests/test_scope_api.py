@@ -4,11 +4,14 @@ The service's graph singleton is swapped for a fake-injected graph so these run
 offline (no network, no LLM).
 """
 
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
 from pytest import MonkeyPatch
 
-from app.generation import service
+from app.generation import generation, service, writer
+from app.generation.generation import QuestionBatch, QuestionDraft
 from app.generation.scoping import build_scoping_graph
 from app.main import app
 from tests.fakes import fake_expand, fake_fetch
@@ -19,6 +22,24 @@ def client(monkeypatch: MonkeyPatch) -> TestClient:
     fake_graph = build_scoping_graph(expand_fn=fake_expand, fetch_fn=fake_fetch)
     monkeypatch.setattr(service, "_GRAPH", fake_graph)
     return TestClient(app)
+
+
+def _drive_to_scope(client: TestClient) -> str:
+    """Run a session through to a finished scope; returns its thread_id."""
+    thread_id = str(
+        client.post("/scope/start", json={"root_topic": "web development"}).json()[
+            "thread_id"
+        ]
+    )
+    client.post(
+        f"/scope/{thread_id}/resume",
+        json={"selected": ["rest", "react"], "deeper_into": "react"},
+    )
+    client.post(
+        f"/scope/{thread_id}/resume",
+        json={"selected": ["react/hooks", "react/context"], "deeper_into": None},
+    )
+    return thread_id
 
 
 def test_start_returns_first_pick(client: TestClient) -> None:
@@ -66,3 +87,53 @@ def test_resume_unknown_thread_is_404(client: TestClient) -> None:
         json={"selected": ["rest"], "deeper_into": None},
     )
     assert resp.status_code == 404
+
+
+def test_generate_writes_questions_per_topic(
+    client: TestClient, monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
+    # Offline: fake the LLM, and write into a tmp corpus dir.
+    batch = QuestionBatch(
+        questions=[
+            QuestionDraft(
+                question=f"Q{i}?",
+                options=["a", "b", "c", "d"],
+                correct=0,
+                explanation="why",
+            )
+            for i in range(3)
+        ]
+    )
+    monkeypatch.setattr(
+        generation,
+        "structured",
+        lambda schema, **k: type("R", (), {"invoke": lambda self, p: batch})(),
+    )
+    monkeypatch.setattr(writer, "QUESTIONS_DIR", tmp_path)
+
+    thread_id = _drive_to_scope(client)
+    resp = client.post(f"/scope/{thread_id}/generate")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["root_topic"] == "web development"
+    # Three scoped topics (rest, react/hooks, react/context), 3 questions each.
+    assert {t["topic_id"] for t in body["topics"]} == {
+        "rest",
+        "react/hooks",
+        "react/context",
+    }
+    assert body["total"] == 9
+
+
+def test_generate_unknown_thread_is_404(client: TestClient) -> None:
+    assert client.post("/scope/nope/generate").status_code == 404
+
+
+def test_generate_before_scope_ready_is_409(client: TestClient) -> None:
+    thread_id = client.post(
+        "/scope/start", json={"root_topic": "web development"}
+    ).json()["thread_id"]
+
+    # Session exists but is still awaiting the first pick.
+    assert client.post(f"/scope/{thread_id}/generate").status_code == 409
