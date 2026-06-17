@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "python-code-review": {
+      "source": "existential-birds/beagle",
+      "sourceType": "github",
+      "skillPath": "plugins/beagle-python/skills/python-code-review/SKILL.md",
+      "computedHash": "39583bc4744379ce25253ffad0b4a632936e34b6d7ae77fa57466174bc2f2f33"
+    }
+  }
+}

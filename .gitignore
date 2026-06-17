@@ -10,3 +10,9 @@ venv/
 
 # Question bank is part of local setup, not committed.
 questions/
+
+# Interview-prep research working dir (local-only)
+interview-prep/
+
+# Claude Code: per-developer settings are personal; everything else in .claude/ is committed.
+.claude/settings.local.json
