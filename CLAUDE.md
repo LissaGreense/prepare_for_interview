@@ -50,3 +50,24 @@ npm test                                     # vitest
   before `pytest`/`uvicorn`/`ruff`/`mypy`; don't run backend tooling from repo root.
 - **`questions/` is gitignored, per-user content.** Never commit it; never assume its
   contents exist in CI. Code must handle an empty/missing topic gracefully.
+
+## Working with Claude
+
+- **When you correct a recurring mistake, write the fix down — don't just re-prompt.**
+  Project rules go in this file; session/task notes go in auto-memory. A correction
+  given only in chat fixes one run; a correction written down fixes every future run.
+  Keep this file short — add a rule only after the same mistake recurs, and prune stale
+  ones.
+- **New task → `/clear` and write a fresh brief. Related follow-up → `/compact <hint>`**
+  naming what to keep (e.g. "focus on the generation pipeline, drop scope-API debugging").
+- **Kick off real tasks with Goal / Constraints / Acceptance criteria** so Claude plans
+  the whole problem instead of guessing.
+- **`.claude/` is committed Claude tooling** (see below) — treat it as project code.
+  - `commands/` — `/check` (full CI-equivalent gate) and `/test` (fast loop). They encode
+    the `backend/.venv` and `:5173` gotchas so they don't get re-learned.
+  - `agents/code-reviewer.md` — read-only pre-PR review agent wrapping the vendored skill.
+  - `settings.json` — committed permission allowlist for safe everyday commands.
+    `settings.local.json` is personal/gitignored.
+  - `skills/<skill>` is a **symlink** into `.agents/skills/<skill>` (the canonical
+    vendored files); `skills-lock.json` pins the source + hash. Don't "tidy up" the
+    symlink — it's how Claude Code discovers the skill.
